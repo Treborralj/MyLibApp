@@ -31,7 +31,7 @@ fun LoginPage(navController: NavController, viewModel: AuthenticationViewModel){
     LaunchedEffect(uiState.token) {
         if(uiState.token != null){
             navController.navigate("homeFeedPage"){
-                popUpTo("signupPage"){inclusive = true}
+                popUpTo("loginPage"){inclusive = true}
             }
         }
     }

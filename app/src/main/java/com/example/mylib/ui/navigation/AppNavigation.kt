@@ -17,19 +17,20 @@ import com.example.mylib.viewModel.AuthenticationViewModelFactory
 fun AppNavigation(){
     val navController = rememberNavController()
 
+    val api = RetrofitClient.authenticationApi
+    val repository = AuthenticationRepository(api)
+    val factory = AuthenticationViewModelFactory(repository)
+    val viewModel: AuthenticationViewModel = viewModel(factory = factory)
+
     NavHost(
         navController = navController,
         startDestination = "loginPage"
     ){
         composable("loginPage"){
-            val api = RetrofitClient.authenticationApi
-            val repository = AuthenticationRepository(api)
-            val factory = AuthenticationViewModelFactory(repository)
-            val viewModel: AuthenticationViewModel = viewModel(factory = factory)
             LoginPage(navController, viewModel)
         }
         composable("signupPage"){
-            SignupPage(navController)
+            SignupPage(navController, viewModel)
 
         }
         composable("homeFeedPage"){
