@@ -15,6 +15,6 @@ object RetrofitClient{
     }
 
     val authenticationApi: AuthenticationApi by lazy{retrofit.create(AuthenticationApi::class.java)}
-    //val bookApi: BookApi by lazy{retrofit.create(BookApi::class.java)}
+    val bookApi: BookApi by lazy{retrofit.create(BookApi::class.java)}
     //Setja flieri api hér
 }
