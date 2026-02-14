@@ -23,16 +23,18 @@ import androidx.navigation.NavController
 import com.example.mylib.viewModel.AuthenticationViewModel
 
 @Composable
-fun LoginPage(navController: NavController, viewModel: AuthenticationViewModel){
+fun LoginPage(
+    viewModel: AuthenticationViewModel,
+    onLoginSuccess: () -> Unit,
+    onGoToSignup: () -> Unit
+){
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState.token) {
         if(uiState.token != null){
-            navController.navigate("homeFeedPage"){
-                popUpTo("loginPage"){inclusive = true}
-            }
+            onLoginSuccess()
         }
     }
 
@@ -55,6 +57,9 @@ fun LoginPage(navController: NavController, viewModel: AuthenticationViewModel){
             label = {Text("Password")},
             visualTransformation = PasswordVisualTransformation()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = {
                 viewModel.login(username, password)
@@ -62,11 +67,7 @@ fun LoginPage(navController: NavController, viewModel: AuthenticationViewModel){
         ){
             Text("Login")
         }
-        Button(
-            onClick = {
-                navController.navigate("signupPage")
-            }
-        ) {
+        Button(onClick = onGoToSignup) {
             Text("Click here to signup")
         }
     }

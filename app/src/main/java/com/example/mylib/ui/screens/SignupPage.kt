@@ -28,7 +28,10 @@ import androidx.navigation.NavController
 import com.example.mylib.viewModel.AuthenticationViewModel
 
 @Composable
-fun SignupPage(navController: NavController, viewModel: AuthenticationViewModel){
+fun SignupPage(
+    viewModel: AuthenticationViewModel,
+    onSignupFinished: () -> Unit
+){
     var username by remember{ mutableStateOf("") }
     var password by remember{mutableStateOf("")}
     val uiState by viewModel.uiState.collectAsState()
@@ -39,12 +42,9 @@ fun SignupPage(navController: NavController, viewModel: AuthenticationViewModel)
         if(success != null){
             snackbarHostState.showSnackbar(
                 message = "Signup successful for ${success.username}",
-                actionLabel = "Sign in"
             )
-            navController.navigate("loginPage"){
-                popUpTo("signupPage"){inclusive = true}
-            }
             viewModel.clearSignupSuccess()
+            onSignupFinished()
         }
     }
 
