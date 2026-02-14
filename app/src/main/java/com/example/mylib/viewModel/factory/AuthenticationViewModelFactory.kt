@@ -1,8 +1,9 @@
-package com.example.mylib.viewModel
+package com.example.mylib.viewModel.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mylib.data.repo.AuthenticationRepository
+import com.example.mylib.viewModel.AuthenticationViewModel
 
 class AuthenticationViewModelFactory(
     private val repository: AuthenticationRepository
@@ -14,5 +15,4 @@ class AuthenticationViewModelFactory(
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
-
 }
