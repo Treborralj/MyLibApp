@@ -10,4 +10,7 @@ class BookRepository(private val api: BookApi) {
         }
         return api.searchBooks(name = queryString)
     }
+    suspend fun getBookById(bookId: Int): BookResponse? {
+        return api.searchBooks(id = bookId).firstOrNull()
+    }
 }

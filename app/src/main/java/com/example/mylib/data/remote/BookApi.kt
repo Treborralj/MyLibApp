@@ -13,4 +13,5 @@ interface BookApi {
                             @Query("writer") writer: String? = null,
                             @Query("score") score: Double? = null,
                             ): List<BookResponse>
+
 }
