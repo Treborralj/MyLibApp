@@ -25,6 +25,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.mylib.ui.components.StarRating
 import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Button
+
 
 @Composable
 fun BookPage(
@@ -49,6 +57,8 @@ fun BookPage(
         uiState.book != null -> {
             val book = uiState.book!!
             var userRating by remember(bookId) { mutableStateOf(0f) }
+            var expanded by remember { mutableStateOf(false) }
+
 
             Column(
                 modifier = Modifier
@@ -101,7 +111,40 @@ fun BookPage(
                     text = "Your rating: $userRating / 5",
                     style = MaterialTheme.typography.bodyMedium
                 )
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Button(
+                        onClick = { expanded = true }
+                    ) {
+                        Text("Add to List")
+                    }
 
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Want to Read") },
+                            onClick = {
+                                expanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Currently Reading") },
+                            onClick = {
+                                expanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Read") },
+                            onClick = {
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+                //TEMPORARY STAR RATING, WILL BE MOVED TO REVIEWS?
                 StarRating(
                     rating = userRating,
                     onRatingChange = { userRating = it }
