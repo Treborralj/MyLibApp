@@ -1,6 +1,9 @@
 package com.example.mylib.ui.navigation
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,9 +22,18 @@ import com.example.mylib.viewModel.factory.AuthenticationViewModelFactory
 import com.example.mylib.viewModel.factory.BookSearchViewModelFactory
 import com.example.mylib.viewModel.BookViewModel
 import com.example.mylib.viewModel.factory.BookViewModelFactory
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.runtime.getValue
+import com.example.mylib.ui.components.BottomBar
+
 @Composable
 fun AppNavigation(){
     val navController = rememberNavController()
+
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val showBottomBar = currentRoute != "loginPage" && currentRoute != "signupPage"
+
 
     val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi)
     val authenticationFactory = AuthenticationViewModelFactory(authenticationRepository)
@@ -34,10 +46,26 @@ fun AppNavigation(){
     val bookDetailsFactory = BookViewModelFactory(bookRepository)
     val bookViewModel: BookViewModel = viewModel(factory = bookDetailsFactory)
 
-    NavHost(
-        navController = navController,
-        startDestination = "loginPage"
-    ){
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                BottomBar(
+                    currentRoute = currentRoute,
+                    onTabClick = { route ->
+                        navController.navigate(route) {
+                            popUpTo("homeFeedPage") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+        }
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = "loginPage",
+            modifier = Modifier.padding(padding)
+        ) {
         composable("loginPage"){
             LoginPage(
                 viewModel = authenticationViewModel,
@@ -56,7 +84,7 @@ fun AppNavigation(){
                 viewModel = authenticationViewModel,
                 onSignupFinished = {
                     navController.navigate("loginPage"){
-                        popUpTo("singupPage"){inclusive = true}
+                        popUpTo("signupPage"){inclusive = true}
                     }
                 }
             )
@@ -85,4 +113,4 @@ fun AppNavigation(){
             )
         }
     }
-}
+}}

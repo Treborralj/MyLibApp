@@ -16,7 +16,7 @@ fun HomeFeedPage(navController: NavController){
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ){
-        Text("Weolcome to you home feed")
+        Text("Welcome to your home feed")
     }
 
 }
