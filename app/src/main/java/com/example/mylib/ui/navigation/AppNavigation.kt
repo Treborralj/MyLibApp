@@ -7,15 +7,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mylib.data.remote.RetrofitClient
 import com.example.mylib.data.repo.AuthenticationRepository
-import com.example.mylib.data.repo.BookRepository
-import com.example.mylib.ui.screens.BookSearchPage
+import com.example.mylib.data.repo.SearchRepository
+import com.example.mylib.ui.screens.SearchPage
 import com.example.mylib.ui.screens.HomeFeedPage
 import com.example.mylib.ui.screens.LoginPage
 import com.example.mylib.ui.screens.SignupPage
-import com.example.mylib.viewModel.AuthenticationViewModel
-import com.example.mylib.viewModel.BookSearchViewModel
+import com.example.mylib.viewModel.authentication.AuthenticationViewModel
+import com.example.mylib.viewModel.search.SearchViewModel
 import com.example.mylib.viewModel.factory.AuthenticationViewModelFactory
-import com.example.mylib.viewModel.factory.BookSearchViewModelFactory
+import com.example.mylib.viewModel.factory.SearchViewModelFactory
 
 @Composable
 fun AppNavigation(){
@@ -25,9 +25,9 @@ fun AppNavigation(){
     val authenticationFactory = AuthenticationViewModelFactory(authenticationRepository)
     val authenticationViewModel: AuthenticationViewModel = viewModel(factory = authenticationFactory)
 
-    val bookRepository = BookRepository(RetrofitClient.bookApi)
-    val bookFactory = BookSearchViewModelFactory(bookRepository)
-    val bookSearchViewModel: BookSearchViewModel = viewModel(factory = bookFactory)
+    val searchRepository = SearchRepository(RetrofitClient.bookApi, RetrofitClient.userApi)
+    val bookFactory = SearchViewModelFactory(searchRepository)
+    val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
     NavHost(
         navController = navController,
@@ -37,7 +37,7 @@ fun AppNavigation(){
             LoginPage(
                 viewModel = authenticationViewModel,
                 onLoginSuccess = {
-                    navController.navigate("bookSearchPage"){
+                    navController.navigate("searchPage"){
                         popUpTo("loginPage"){inclusive = true}
                     }
                 },
@@ -55,16 +55,16 @@ fun AppNavigation(){
                     }
                 }
             )
-
         }
         composable("homeFeedPage"){
             HomeFeedPage(navController)
 
         }
-        composable("bookSearchPage"){
-            BookSearchPage(
-                viewModel = bookSearchViewModel,
-                onBookClick = { }
+        composable("searchPage"){
+            SearchPage(
+                viewModel = searchViewModel,
+                onBookClick = { },
+                onUserClick = { }
             )
         }
     }

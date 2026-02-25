@@ -3,7 +3,7 @@ package com.example.mylib.viewModel.factory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mylib.data.repo.AuthenticationRepository
-import com.example.mylib.viewModel.AuthenticationViewModel
+import com.example.mylib.viewModel.authentication.AuthenticationViewModel
 
 class AuthenticationViewModelFactory(
     private val repository: AuthenticationRepository

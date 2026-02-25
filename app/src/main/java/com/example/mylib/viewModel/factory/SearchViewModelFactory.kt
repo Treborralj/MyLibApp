@@ -2,17 +2,17 @@ package com.example.mylib.viewModel.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.mylib.data.repo.BookRepository
-import com.example.mylib.viewModel.BookSearchViewModel
+import com.example.mylib.data.repo.SearchRepository
+import com.example.mylib.viewModel.search.SearchViewModel
 
 
-class BookSearchViewModelFactory (
-    private val repository: BookRepository
+class SearchViewModelFactory (
+    private val repository: SearchRepository
 ): ViewModelProvider.Factory{
     override fun <T : ViewModel> create(modelClass: Class<T>): T{
-        if(modelClass.isAssignableFrom(BookSearchViewModel::class.java)){
+        if(modelClass.isAssignableFrom(SearchViewModel::class.java)){
             @Suppress("UNCHECKED_CAST")
-            return BookSearchViewModel(repository) as T
+            return SearchViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel Class")
     }
