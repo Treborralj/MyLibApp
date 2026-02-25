@@ -1,8 +1,8 @@
 package com.example.mylib.viewModel.factory
 
+import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.mylib.data.repo.BookRepository
 import com.example.mylib.viewModel.BookViewModel
 
 class BookViewModelFactory(
