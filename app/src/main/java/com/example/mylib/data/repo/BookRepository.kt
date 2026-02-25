@@ -1,4 +1,3 @@
-package com.example.mylib.data.repo
 
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.remote.BookApi

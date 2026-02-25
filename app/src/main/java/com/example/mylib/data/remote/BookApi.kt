@@ -1,7 +1,9 @@
 package com.example.mylib.data.remote
 
 import com.example.mylib.data.models.BookResponse
+import com.example.mylib.data.models.UserResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface BookApi {
@@ -14,4 +16,9 @@ interface BookApi {
                             @Query("score") score: Double? = null,
                             ): List<BookResponse>
 
+    @GET("books/all")
+    suspend fun getAllBooks(): List<BookResponse>
+    @GET("account/discoverUser/{username}")
+    suspend fun findUser(@Path("username") username: String): List<UserResponse>
 }
+
