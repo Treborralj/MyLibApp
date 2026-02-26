@@ -1,0 +1,118 @@
+package com.example.mylib.data.repo
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.mylib.data.repo.Dao.BookDao
+import com.example.mylib.data.repo.Dao.BookListCrossRefDao
+import com.example.mylib.data.repo.Dao.BookListDao
+import com.example.mylib.data.repo.Dao.PostDao
+import com.example.mylib.data.repo.Dao.ReviewDao
+import com.example.mylib.data.repo.Dao.UserDao
+
+
+@Database(
+    entities = [
+        User::class,
+        Book::class,
+               ],
+    version = 1
+)
+abstract class AppDatabase : RoomDatabase() {
+
+    abstract fun userDao(): UserDao
+    abstract fun bookDao(): BookDao
+
+    companion object {
+
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "app_database"
+                ).build()
+
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+}
+
+@Entity
+data class User(
+    @PrimaryKey val id: Int,
+    val name: String,
+    val bio: String
+)
+@Entity
+data class Book(
+    @PrimaryKey val id: Int,
+    val name: String,
+    val genre: String,
+    val isbn: String,
+    val writer: String,
+    val score: Double
+)
+/*
+@Entity
+data class Review(
+ @PrimaryKey val id: Int
+)
+
+@Entity
+data class Post(
+    @PrimaryKey val id: Int
+)
+
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class,
+            parentColumns = ["id"],
+            childColumns = ["accountId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["accountId", "type"], unique = true)
+    ]
+)
+data class BookList(
+    @PrimaryKey(autoGenerate = true) val listId: Int,
+    val accountId: Int,
+    val type: String // "wishlist", "reading", "finished"
+)
+
+
+@Entity(
+    primaryKeys = ["listId", "bookId"],
+    foreignKeys = [
+        ForeignKey(
+            entity = BookList::class,
+            parentColumns = ["id"],
+            childColumns = ["listId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Book::class,
+            parentColumns = ["id"],
+            childColumns = ["bookId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class BookListCrossRef(
+    val listId: Int,
+    val bookId: Int
+)
+*/
