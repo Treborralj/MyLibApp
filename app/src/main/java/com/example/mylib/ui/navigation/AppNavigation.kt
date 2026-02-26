@@ -1,5 +1,6 @@
 package com.example.mylib.ui.navigation
 
+import BookRepository
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -23,6 +24,9 @@ import com.example.mylib.viewModel.authentication.AuthenticationViewModel
 import com.example.mylib.viewModel.search.SearchViewModel
 import com.example.mylib.viewModel.factory.AuthenticationViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
+import com.example.mylib.ui.screens.BookPage
+import com.example.mylib.viewModel.BookViewModel
+import com.example.mylib.viewModel.factory.BookViewModelFactory
 
 @Composable
 fun AppNavigation(){
@@ -38,12 +42,15 @@ fun AppNavigation(){
 
     val navigationBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navigationBackStackEntry?.destination?.route
+    val bookRepository = BookRepository(RetrofitClient.bookApi)
+    val bookViewModelFactory = BookViewModelFactory(bookRepository)
 
     val showBottomBar = currentRoute in listOf(
         Routes.Home.route,
         Routes.Search.route,
         Routes.Profile.route,
-        Routes.Lists.route
+        Routes.Lists.route,
+        "bookPage/{bookId}"
     )
 
     Scaffold(
@@ -72,6 +79,19 @@ fun AppNavigation(){
                     }
                 )
             }
+            composable("bookPage/{bookId}") { backStackEntry ->
+                val bookId = backStackEntry.arguments
+                    ?.getString("bookId")
+                    ?.toIntOrNull()
+                    ?: return@composable
+
+                val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
+                BookPage(
+                    bookId = bookId,
+                    viewModel = bookViewModel,
+                    onAddReview = { }
+                )
+            }
             composable(Routes.Signup.route){
                 SignupPage(
                     viewModel = authenticationViewModel,
@@ -89,7 +109,9 @@ fun AppNavigation(){
             composable(Routes.Search.route){
                 SearchPage(
                     viewModel = searchViewModel,
-                    onBookClick = { },
+                    onBookClick = { book ->
+                        navController.navigate("bookPage/${book.id}")
+                    },
                     onUserClick = { }
                 )
             }
