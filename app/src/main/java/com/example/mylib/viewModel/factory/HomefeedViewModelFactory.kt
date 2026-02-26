@@ -4,16 +4,17 @@ import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mylib.data.repo.ReviewRepository
+import com.example.mylib.data.repo.UserRepository
 import com.example.mylib.viewModel.BookViewModel
+import com.example.mylib.viewModel.HomefeedViewModel
 
-class BookViewModelFactory(
-    private val repository: BookRepository,
-    private val reviewRepository: ReviewRepository
+class HomefeedViewModelFactory(
+    private val repository: UserRepository,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(BookViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(HomefeedViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return BookViewModel(repository,reviewRepository) as T
+            return HomefeedViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel Class")
     }

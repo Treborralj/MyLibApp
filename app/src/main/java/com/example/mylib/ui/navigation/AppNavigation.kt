@@ -13,7 +13,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mylib.data.remote.RetrofitClient
 import com.example.mylib.data.repo.AuthenticationRepository
+import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.SearchRepository
+import com.example.mylib.data.repo.UserRepository
 import com.example.mylib.ui.screens.SearchPage
 import com.example.mylib.ui.screens.HomeFeedPage
 import com.example.mylib.ui.screens.ListPage
@@ -26,7 +28,9 @@ import com.example.mylib.viewModel.factory.AuthenticationViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
 import com.example.mylib.ui.screens.BookPage
 import com.example.mylib.viewModel.BookViewModel
+import com.example.mylib.viewModel.HomefeedViewModel
 import com.example.mylib.viewModel.factory.BookViewModelFactory
+import com.example.mylib.viewModel.factory.HomefeedViewModelFactory
 
 @Composable
 fun AppNavigation(){
@@ -40,10 +44,15 @@ fun AppNavigation(){
     val bookFactory = SearchViewModelFactory(searchRepository)
     val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
+    val userRepository = UserRepository(RetrofitClient.userApi)
+    val homefeedFactory = HomefeedViewModelFactory(userRepository)
+    val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
+
     val navigationBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navigationBackStackEntry?.destination?.route
     val bookRepository = BookRepository(RetrofitClient.bookApi)
-    val bookViewModelFactory = BookViewModelFactory(bookRepository)
+    val reviewRepository = ReviewRepository(RetrofitClient.reviewApi)
+    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository)
 
     val showBottomBar = currentRoute in listOf(
         Routes.Home.route,
@@ -103,7 +112,7 @@ fun AppNavigation(){
                 )
             }
             composable(Routes.Home.route){
-                HomeFeedPage(navController)
+                HomeFeedPage(navController,homeFeedViewModel)
 
             }
             composable(Routes.Search.route){

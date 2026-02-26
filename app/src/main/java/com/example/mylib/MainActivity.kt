@@ -15,6 +15,9 @@ import com.example.mylib.ui.navigation.AppNavigation
 import com.example.mylib.ui.theme.MyLibTheme
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        var bearerToken:String = "";
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
