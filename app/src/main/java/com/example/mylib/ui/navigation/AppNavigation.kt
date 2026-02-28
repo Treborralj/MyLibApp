@@ -1,5 +1,6 @@
 package com.example.mylib.ui.navigation
 
+import BookRepository
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -12,7 +13,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mylib.data.remote.RetrofitClient
 import com.example.mylib.data.repo.AuthenticationRepository
+import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.SearchRepository
+import com.example.mylib.data.repo.UserRepository
 import com.example.mylib.ui.screens.SearchPage
 import com.example.mylib.ui.screens.HomeFeedPage
 import com.example.mylib.ui.screens.ListPage
@@ -23,6 +26,11 @@ import com.example.mylib.viewModel.authentication.AuthenticationViewModel
 import com.example.mylib.viewModel.search.SearchViewModel
 import com.example.mylib.viewModel.factory.AuthenticationViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
+import com.example.mylib.ui.screens.BookPage
+import com.example.mylib.viewModel.BookViewModel
+import com.example.mylib.viewModel.HomefeedViewModel
+import com.example.mylib.viewModel.factory.BookViewModelFactory
+import com.example.mylib.viewModel.factory.HomefeedViewModelFactory
 
 @Composable
 fun AppNavigation(){
@@ -36,14 +44,22 @@ fun AppNavigation(){
     val bookFactory = SearchViewModelFactory(searchRepository)
     val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
+    val userRepository = UserRepository(RetrofitClient.userApi)
+    val homefeedFactory = HomefeedViewModelFactory(userRepository)
+    val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
+
     val navigationBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navigationBackStackEntry?.destination?.route
+    val bookRepository = BookRepository(RetrofitClient.bookApi)
+    val reviewRepository = ReviewRepository(RetrofitClient.reviewApi)
+    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository)
 
     val showBottomBar = currentRoute in listOf(
         Routes.Home.route,
         Routes.Search.route,
         Routes.Profile.route,
-        Routes.Lists.route
+        Routes.Lists.route,
+        "bookPage/{bookId}"
     )
 
     Scaffold(
@@ -72,6 +88,19 @@ fun AppNavigation(){
                     }
                 )
             }
+            composable("bookPage/{bookId}") { backStackEntry ->
+                val bookId = backStackEntry.arguments
+                    ?.getString("bookId")
+                    ?.toIntOrNull()
+                    ?: return@composable
+
+                val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
+                BookPage(
+                    bookId = bookId,
+                    viewModel = bookViewModel,
+                    onAddReview = { }
+                )
+            }
             composable(Routes.Signup.route){
                 SignupPage(
                     viewModel = authenticationViewModel,
@@ -83,13 +112,15 @@ fun AppNavigation(){
                 )
             }
             composable(Routes.Home.route){
-                HomeFeedPage(navController)
+                HomeFeedPage(navController,homeFeedViewModel)
 
             }
             composable(Routes.Search.route){
                 SearchPage(
                     viewModel = searchViewModel,
-                    onBookClick = { },
+                    onBookClick = { book ->
+                        navController.navigate("bookPage/${book.id}")
+                    },
                     onUserClick = { }
                 )
             }

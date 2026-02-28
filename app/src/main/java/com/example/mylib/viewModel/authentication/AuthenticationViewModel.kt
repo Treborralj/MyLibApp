@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.MainActivity
 import com.example.mylib.data.models.SignupResponse
 
 
@@ -25,6 +26,8 @@ class AuthenticationViewModel(
             )
             try {
                 val response = repository.login(username, password)
+                MainActivity.bearerToken = response.token
+                println("token: "+ MainActivity.bearerToken)
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     token = response.token
