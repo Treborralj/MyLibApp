@@ -39,9 +39,26 @@ fun ProfilePage(
 ){
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
+    val refreshReviews =
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.getStateFlow("refreshReviews", false)
+            ?.collectAsState()
     LaunchedEffect(key1 = MainActivity.bearerToken) {
         viewModel.fetchPosts(username)
     }
+    LaunchedEffect(refreshReviews?.value) {
+        if (refreshReviews?.value == true) {
+            viewModel.fetchReviews(username)
+            navController.currentBackStackEntry?.savedStateHandle?.set("refreshReviews", false)
+        }
+    }
+    LaunchedEffect(uiState.viewingReviews, username) {
+        if (uiState.viewingReviews) {
+            viewModel.fetchReviews(username)
+        }
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize(),
@@ -79,29 +96,14 @@ fun ProfilePage(
                                 modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ){
-                                items(
-                                    uiState.posts,
-                                ){ item ->
-                                    if (username == MainActivity.loggedInUser) {
-                                        Column(){
-                                            PostFrame(username, "Post Title", content = PostReviewItem.PostItem(item.post));
-
-                                            Button(onClick = {
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time);
-
-                                                navController.navigate(Routes.PostEditor.route);
-                                            }) {
-                                                Text("Edit")
-                                            }
-                                        }
-                                    }
-                                    else {
-                                        PostFrame(username, "Post Title", content = PostReviewItem.PostItem(item.post));
-                                    }
-
-
+                                items<PostReviewItem.PostItem>(
+                                    items = uiState.posts
+                                ) { item ->
+                                    PostFrame(
+                                        username,
+                                        "Post Title",
+                                        content = PostReviewItem.PostItem(item.post)
+                                    )
                                 }
                             }
                         }
@@ -134,29 +136,36 @@ fun ProfilePage(
                                 modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ){
-                                items(
-                                    uiState.reviews,
-                                ){ item ->
-
+                                items<PostReviewItem.ReviewItem>(
+                                    items = uiState.reviews
+                                ) { item ->
                                     if (username == MainActivity.loggedInUser) {
                                         Column(){
-                                            PostFrame(username, "Book Title", content = PostReviewItem.ReviewItem(item.review));
+                                            PostFrame(
+                                                username,
+                                                "Book Title",
+                                                content = PostReviewItem.ReviewItem(item.review)
+                                            )
 
                                             Button(onClick = {
                                                 navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
                                                 navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time);
+                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time)
                                                 navController.currentBackStackEntry?.savedStateHandle?.set("reviewScore", item.review.score)
-                                                navController.navigate(Routes.ReviewEditor.route);
+                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookId", item.review.bookId)
+                                                navController.navigate(Routes.ReviewEditor.route)
                                             }) {
                                                 Text("Edit")
                                             }
                                         }
                                     }
                                     else {
-                                        PostFrame(username, "Book Title", content = PostReviewItem.ReviewItem(item.review));
+                                        PostFrame(
+                                            username,
+                                            "Book Title",
+                                            content = PostReviewItem.ReviewItem(item.review)
+                                        )
                                     }
-
                                 }
                             }
                         }

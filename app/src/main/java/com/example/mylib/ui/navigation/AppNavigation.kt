@@ -72,13 +72,14 @@ fun AppNavigation(){
     val postEditorFactory = PostEditorViewModelFactory(postRepository)
     val reviewEditorFactory = ReviewEditorViewModelFactory(reviewRepository)
 
-    val showBottomBar = currentRoute in listOf(
-        Routes.Home.route,
-        Routes.Search.route,
-        Routes.Profile.route,
-        Routes.Lists.route,
-        "bookPage/{bookId}"
-    )
+    val showBottomBar =
+        currentRoute == Routes.Home.route ||
+                currentRoute == Routes.Search.route ||
+                currentRoute == Routes.Lists.route ||
+                currentRoute == "bookPage/{bookId}" ||
+                currentRoute == Routes.ReviewEditor.route ||
+                currentRoute == Routes.PostEditor.route ||
+                (currentRoute?.startsWith(Routes.Profile.route) == true)
 
     Scaffold(
         bottomBar = {
@@ -177,20 +178,26 @@ fun AppNavigation(){
                 val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewText")
                 val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime")
                 val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore")
+                val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId")
 
-                val review = ReviewResponse(
-                    id = id,
-                    text = text,
-                    time = time,
-                    score = score,
-                )
+                val review: ReviewResponse? = if (id != null && bookId != null) {
+                    ReviewResponse(
+                        id = id,
+                        text = text,
+                        time = time,
+                        score = score ?: 0.0,
+                        bookId = bookId
+                    )
+                } else {
+                    null
+                }
 
                 val reviewEditorViewModel: ReviewEditorViewModel = viewModel(factory = reviewEditorFactory)
                 ReviewEditor(
                     viewModel = reviewEditorViewModel,
                     review = review,
                     bookTitle = "Book Title",
-                    bookId = null,
+                    bookId = bookId,
                     navController = navController
                 )
             }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.viewModel.ReviewEditorViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun ReviewEditor(
@@ -38,13 +39,28 @@ fun ReviewEditor(
 )
 {
 
-    var newTitle by rememberSaveable { mutableStateOf("") }
-    var newText by rememberSaveable { mutableStateOf("") }
-    var newScore by rememberSaveable {mutableStateOf("0.0")}
+    var newTitle by rememberSaveable(review?.id, bookTitle) {
+        mutableStateOf(bookTitle ?: "")
+    }
 
+    var newText by rememberSaveable(review?.id) {
+        mutableStateOf(review?.text ?: "")
+    }
+
+    var newScore by rememberSaveable(review?.id) {
+        mutableStateOf((review?.score ?: 0.0).toString())
+    }
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(uiState.result, uiState.error) {
+        if (uiState.result != null && uiState.error == null) {
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("refreshReviews", true)
 
+            navController.popBackStack()
+        }
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,26 +121,22 @@ fun ReviewEditor(
             Row () {
                 Button(
                     onClick = {
-                        if (review?.id !=null) {
-                            viewModel.editReview(newText,review.id,newScore.toDouble(),bookId)
+                        val score = newScore.toDoubleOrNull() ?: 0.0
+
+                        if (review?.id != null) {
+                            viewModel.editReview(newText, review.id, score, bookId)
                         } else {
-                            viewModel.editReview(newText,null,newScore.toDouble(),bookId)
-                        }
-                        if (!uiState.loading && uiState.error == null) {
-                            navController.popBackStack();
+                            viewModel.editReview(newText, null, score, bookId)
                         }
                     }
-                ){
+                ) {
                     Text("Save")
                 }
-
                 if (review?.id!=null) {
                     Button(
                         onClick = {
                             viewModel.deleteReview(review.id);
-                            if (!uiState.loading && uiState.error == null) {
-                                navController.popBackStack();
-                            }
+
                         }
                     ){
                         Text("Delete")

@@ -10,6 +10,7 @@ import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Query
@@ -27,7 +28,7 @@ interface ReviewApi {
     @POST("reviews/add")
     suspend fun createReview(@Body() body:HashMap<String, Any>): ReviewResponse
 
-    @PUT("reviews/edit")
+    @PATCH("reviews/edit")
     suspend fun editReview(@Body() body: ReviewRequest): ReviewResponse
 
     @DELETE("reviews/remove/{id}")

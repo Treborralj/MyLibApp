@@ -23,14 +23,14 @@ class ReviewRepository(private val api: ReviewApi) {
             txt = text
         }
         val hashMap = HashMap<String, Any>();
-        hashMap["text"] = '"'+txt+'"'
+        hashMap["text"] = txt
         hashMap["bookId"] = bookId
         hashMap["score"] = score
         return api.createReview(hashMap)
     }
 
-    suspend fun editReview(text: String, id: Int, score: Double?): ReviewResponse {
-        val body = ReviewRequest(id,text,score)
+    suspend fun editReview(text: String, id: Int, score: Double): ReviewResponse {
+        val body = ReviewRequest(reviewId = id, text = text, score = score)
         return api.editReview(body)
     }
 
