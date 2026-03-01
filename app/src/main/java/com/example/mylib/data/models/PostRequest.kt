@@ -1,7 +1,6 @@
 package com.example.mylib.data.models
 
-data class PostResponse (
+data class PostRequest (
     val id: Int?,
     val text: String?,
-    val time: String?
 )

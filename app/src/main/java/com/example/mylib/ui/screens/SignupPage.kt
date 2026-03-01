@@ -24,25 +24,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.mylib.viewModel.authentication.AuthenticationViewModel
-
+import androidx.navigation.NavController
+import com.example.mylib.ui.navigation.Routes
 @Composable
 fun SignupPage(
     viewModel: AuthenticationViewModel,
-    onSignupFinished: () -> Unit
+    navController: NavController
 ){
     var username by remember{ mutableStateOf("") }
     var password by remember{mutableStateOf("")}
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember{ SnackbarHostState() }
-
-    LaunchedEffect(uiState.signupSuccess){
+    LaunchedEffect(uiState.signupSuccess) {
         val success = uiState.signupSuccess
-        if(success != null){
-            snackbarHostState.showSnackbar(
-                message = "Signup successful for ${success.username}",
-            )
+        if (success != null) {
             viewModel.clearSignupSuccess()
-            onSignupFinished()
+
+            navController.navigate(Routes.Login.route) {
+                popUpTo(Routes.Signup.route) { inclusive = true }
+                launchSingleTop = true
+            }
         }
     }
 

@@ -28,6 +28,8 @@ class AuthenticationViewModel(
                 val response = repository.login(username, password)
                 MainActivity.bearerToken = response.token
                 println("token: "+ MainActivity.bearerToken)
+                MainActivity.loggedInUser = username
+                println("user: " + MainActivity.loggedInUser)
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     token = response.token

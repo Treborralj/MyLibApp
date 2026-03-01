@@ -1,6 +1,5 @@
 package com.example.mylib.ui.screens
 
-import com.example.mylib.data.models.BookResponse
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,6 +31,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
 import com.example.mylib.ui.components.PostFrame
+import com.example.mylib.ui.components.ReviewCreatorDialog
 
 
 @Composable
@@ -59,8 +59,7 @@ fun BookPage(
             val book = uiState.book!!
             var userRating by remember(bookId) { mutableStateOf(0f) }
             var expanded by remember { mutableStateOf(false) }
-
-
+            var showReviewDialog by remember { mutableStateOf(false) }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -146,12 +145,24 @@ fun BookPage(
                     }
                 }
                 //TEMPORARY STAR RATING, WILL BE MOVED TO REVIEWS?
-                StarRating(
-                    rating = userRating,
-                    onRatingChange = { userRating = it }
+
+                Button(onClick = { showReviewDialog = true }) {
+                    Text("Write Review")
+                }
+                ReviewCreatorDialog(
+                    open = showReviewDialog,
+                    bookTitle = book.name ?: "Unknown Title",
+                    initialRating = userRating,
+                    onDismiss = { showReviewDialog = false },
+                    onSubmit = { rating, text ->
+                        showReviewDialog = false
+                        viewModel.createReview(
+                            bookId = bookId,
+                            score = rating,
+                            text = text
+                        )
+                    }
                 )
-
-
 
                 when {
                     uiState.loadingReviews -> {

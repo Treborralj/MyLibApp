@@ -86,6 +86,23 @@ class BookViewModel(
             }
         }
     }
-
+    fun createReview(bookId: Int, score: Float, text: String) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(error = null, loadingReviews = true)
+                reviewRepository.createReview(
+                    text = text,
+                    bookId = bookId,
+                    score = score.toDouble()
+                )
+                fetchReviews(bookId)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    loadingReviews = false,
+                    error = e.message ?: "Failed to create review"
+                )
+            }
+        }
+    }
 }
 
