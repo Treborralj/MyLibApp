@@ -43,5 +43,5 @@ object RetrofitClient{
     val userApi: UserApi by lazy { retrofit.create(UserApi::class.java)}
 
     val reviewApi: ReviewApi by lazy { retrofit.create(ReviewApi::class.java)}
-    //Setja flieri api hér
+    val postApi: PostApi by lazy {retrofit.create(PostApi::class.java)}
 }

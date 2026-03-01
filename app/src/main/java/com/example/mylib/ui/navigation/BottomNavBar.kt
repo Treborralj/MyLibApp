@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.mylib.MainActivity
 
 @Composable
 fun BottomNavBar(navController: NavController){
@@ -22,7 +23,7 @@ fun BottomNavBar(navController: NavController){
     val items = listOf(
         BottomNavItem("Home", Routes.Home.route, Icons.Filled.Home),
         BottomNavItem("Search", Routes.Search.route, Icons.Filled.Search),
-        BottomNavItem("Profile", Routes.Profile.route, Icons.Filled.Person),
+        BottomNavItem("Profile", Routes.Profile.route + "/" + MainActivity.loggedInUser, Icons.Filled.Person),
         BottomNavItem("List", Routes.Lists.route, Icons.AutoMirrored.Filled.List)
     )
 

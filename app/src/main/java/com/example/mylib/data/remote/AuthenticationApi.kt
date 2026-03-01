@@ -5,6 +5,7 @@ import com.example.mylib.data.models.LoginResponse
 import com.example.mylib.data.models.SignupRequest
 import com.example.mylib.data.models.SignupResponse
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface AuthenticationApi {
@@ -12,4 +13,7 @@ interface AuthenticationApi {
     suspend fun login(@Body req: LoginRequest): LoginResponse
     @POST("account/signup")
     suspend fun signup(@Body req: SignupRequest): SignupResponse
+
+    @GET("account/me")
+    suspend fun getLoggedIn(): Map<String, String>
 }

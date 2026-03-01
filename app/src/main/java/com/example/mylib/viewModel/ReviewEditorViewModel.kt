@@ -2,45 +2,49 @@ package com.example.mylib.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mylib.MainActivity
-import com.example.mylib.data.models.PostResponse
-import com.example.mylib.data.models.SignupResponse
-import com.example.mylib.data.repo.AuthenticationRepository
-import com.example.mylib.data.repo.PostRepository
-import com.example.mylib.viewModel.authentication.AuthenticationUiState
+import com.example.mylib.data.models.ReviewResponse
+import com.example.mylib.data.repo.ReviewRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
-
-data class PostUiState(
+data class ReviewUiState(
     val loading: Boolean = false,
     val error: String? = null,
-    val result: PostResponse? = null
+    val result: ReviewResponse? = null
 )
 
 
-class PostEditorViewModel(
-    private val repository: PostRepository
+class ReviewEditorViewModel(
+    private val repository: ReviewRepository
 ): ViewModel() {
 
-    private val _uiState = MutableStateFlow(PostUiState())
+    private val _uiState = MutableStateFlow(ReviewUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun editPost(text: String, id:Int?){
+    fun editReview(text: String, id: Int?, score: Double, bookId: Int?){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 loading = true,
                 error = null,
             )
-            var response: PostResponse? = null
+            var response: ReviewResponse? = null
             try{
-                if(id == null) {
-                    response = repository.createPost(text)
+                if(id != null) {
+                    println("attempting to edit review with:\ntext = " + text +
+                        "\nid = "+id+"\nscore= "+score)
+                    response = repository.editReview(text,id, score)
+                    println("edit response: "+response.toString())
+                }
+                else if (bookId != null) {
+                    response = repository.createReview(text, bookId, score)
                 }
                 else {
-                    response = repository.editPost(text,id)
+                    _uiState.value = _uiState.value.copy(
+                        loading = false,
+                        error = "Missing input"
+                    )
+                    return@launch
                 }
                 _uiState.value = _uiState.value.copy(
                     loading = false,
@@ -51,12 +55,11 @@ class PostEditorViewModel(
                     loading = false,
                     error = e.message ?: "Couldn't save changes"
                 )
-                println("error creating/editing post: "+e)
             }
         }
     }
 
-    fun deletePost(id:Int){
+    fun deleteReview(id:Int){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 loading = true,
@@ -64,7 +67,7 @@ class PostEditorViewModel(
             )
             try{
 
-                repository.deletePost(id)
+                repository.deleteReview(id)
 
                 _uiState.value = _uiState.value.copy(
                     loading = false,
@@ -72,9 +75,8 @@ class PostEditorViewModel(
             } catch (e: Exception){
                 _uiState.value = _uiState.value.copy(
                     loading = false,
-                    error = e.message ?: "Couldn't delete post"
+                    error = e.message ?: "Couldn't delete review"
                 )
-                println("error deleting post: "+e)
             }
         }
     }

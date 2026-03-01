@@ -4,7 +4,9 @@ import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.LoginRequest
 import com.example.mylib.data.models.LoginResponse
 import com.example.mylib.data.models.PostResponse
+import com.example.mylib.data.models.ReviewRequest
 import com.example.mylib.data.models.ReviewResponse
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -23,15 +25,10 @@ interface ReviewApi {
     ): List<ReviewResponse>
 
     @POST("reviews/add")
-    suspend fun createReview(@Body() text: String? = null,
-                           @Body() bookId: Int,
-                           @Body() score: Double? = null): ReviewResponse
+    suspend fun createReview(@Body() body:HashMap<String, Any>): ReviewResponse
 
     @PUT("reviews/edit")
-    suspend fun editReview(@Body() text: String? = null,
-                         @Body() reviewId: Int,
-                         @Body() score: Double? = null
-    ): ReviewResponse
+    suspend fun editReview(@Body() body: ReviewRequest): ReviewResponse
 
     @DELETE("reviews/remove/{id}")
     suspend fun deleteReview(@Path("id") id: Int)

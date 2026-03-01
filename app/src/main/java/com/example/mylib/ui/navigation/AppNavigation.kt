@@ -11,8 +11,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.mylib.data.models.PostResponse
+import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.remote.RetrofitClient
 import com.example.mylib.data.repo.AuthenticationRepository
+import com.example.mylib.data.repo.PostRepository
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.SearchRepository
 import com.example.mylib.data.repo.UserRepository
@@ -27,10 +30,18 @@ import com.example.mylib.viewModel.search.SearchViewModel
 import com.example.mylib.viewModel.factory.AuthenticationViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
 import com.example.mylib.ui.screens.BookPage
+import com.example.mylib.ui.screens.PostEditor
+import com.example.mylib.ui.screens.ReviewEditor
 import com.example.mylib.viewModel.BookViewModel
 import com.example.mylib.viewModel.HomefeedViewModel
+import com.example.mylib.viewModel.PostEditorViewModel
+import com.example.mylib.viewModel.ProfileViewModel
+import com.example.mylib.viewModel.ReviewEditorViewModel
 import com.example.mylib.viewModel.factory.BookViewModelFactory
 import com.example.mylib.viewModel.factory.HomefeedViewModelFactory
+import com.example.mylib.viewModel.factory.PostEditorViewModelFactory
+import com.example.mylib.viewModel.factory.ProfileViewModelFactory
+import com.example.mylib.viewModel.factory.ReviewEditorViewModelFactory
 
 @Composable
 fun AppNavigation(){
@@ -53,6 +64,13 @@ fun AppNavigation(){
     val bookRepository = BookRepository(RetrofitClient.bookApi)
     val reviewRepository = ReviewRepository(RetrofitClient.reviewApi)
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository)
+
+    val postRepository = PostRepository(RetrofitClient.postApi)
+    val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
+    val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
+
+    val postEditorFactory = PostEditorViewModelFactory(postRepository)
+    val reviewEditorFactory = ReviewEditorViewModelFactory(reviewRepository)
 
     val showBottomBar = currentRoute in listOf(
         Routes.Home.route,
@@ -124,11 +142,57 @@ fun AppNavigation(){
                     onUserClick = { }
                 )
             }
-            composable(Routes.Profile.route){
-                ProfilePage()
+            composable(Routes.Profile.route + "/{username}"){ backStackEntry ->
+                val username = backStackEntry.arguments
+                    ?.getString("username")
+                    ?: return@composable
+                ProfilePage(username = username,viewModel = profileViewModel, navController = navController)
             }
             composable(Routes.Lists.route){
                 ListPage()
+            }
+
+            composable(Routes.PostEditor.route) {
+                val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("postId")
+                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText")
+                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime")
+
+
+                val post = PostResponse(
+                    id = id,
+                    text = text,
+                    time = time,
+                )
+
+                val postEditorViewModel: PostEditorViewModel = viewModel(factory = postEditorFactory)
+                PostEditor(
+                    viewModel = postEditorViewModel,
+                    post = post,
+                    navController = navController
+                )
+            }
+            composable(Routes.ReviewEditor.route) {
+
+                val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewId")
+                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewText")
+                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime")
+                val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore")
+
+                val review = ReviewResponse(
+                    id = id,
+                    text = text,
+                    time = time,
+                    score = score,
+                )
+
+                val reviewEditorViewModel: ReviewEditorViewModel = viewModel(factory = reviewEditorFactory)
+                ReviewEditor(
+                    viewModel = reviewEditorViewModel,
+                    review = review,
+                    bookTitle = "Book Title",
+                    bookId = null,
+                    navController = navController
+                )
             }
         }
     }
@@ -142,4 +206,7 @@ sealed class Routes(val route: String){
     data object Search: Routes("searchPage")
     data object Profile: Routes("profilePage")
     data object Lists: Routes("listPage")
+
+    data object PostEditor: Routes("postEditorPage")
+    data object ReviewEditor: Routes("reviewEditorPage")
 }

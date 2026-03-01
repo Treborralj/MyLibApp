@@ -65,7 +65,7 @@ fun PostFramePreview(
 
 
                 Text(
-                    text = review.time.slice(IntRange(0,9)),
+                    text = review.time?.slice(IntRange(0,9)) ?: "",
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -84,7 +84,7 @@ fun PostFramePreview(
 
 @Composable
 fun PostFrame(
-    username: String = "sampleuser",
+    username: String = "sampleuser", // þegar það er náð í feed þá gefur bakendinn ekki uppl. um það frá hverjum postarnir eru, gætum viljað breyta því
     bookTitle: String? = "Sample Book",
     //profilePic:
     content: PostReviewItem,
@@ -120,13 +120,13 @@ fun PostFrame(
 
                 when(content) {
                     is PostReviewItem.PostItem -> Text(
-                        text = content.post.time.slice(IntRange(0,9)),
+                        text = content.post.time?.slice(IntRange(0,9)) ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     is PostReviewItem.ReviewItem -> Text(
-                        text = content.review.time.slice(IntRange(0,9)),
+                        text = content.review.time?.slice(IntRange(0,9)) ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
