@@ -19,6 +19,7 @@ import com.example.mylib.data.repo.Dao.UserDao
     entities = [
         User::class,
         Book::class,
+        Review::class,
                ],
     version = 1
 )
@@ -26,6 +27,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
     abstract fun bookDao(): BookDao
+    abstract fun reviewDao(): ReviewDao
 
     companion object {
 
@@ -39,7 +41,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
 
                 INSTANCE = instance
                 instance
@@ -63,12 +67,18 @@ data class Book(
     val writer: String,
     val score: Double
 )
-/*
+
 @Entity
 data class Review(
- @PrimaryKey val id: Int
+    @PrimaryKey val id: Int,
+    val bookId: Int,
+    val username: String,
+    val text: String?,
+    val score: Double,
+    val time: String?
 )
 
+/*
 @Entity
 data class Post(
     @PrimaryKey val id: Int

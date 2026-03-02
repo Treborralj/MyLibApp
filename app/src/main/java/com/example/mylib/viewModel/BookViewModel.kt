@@ -1,17 +1,22 @@
 package com.example.mylib.viewModel
 
-import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.models.UserResponse
+import com.example.mylib.data.repo.Book
+import com.example.mylib.data.repo.BookRepository
+import com.example.mylib.data.repo.Review
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.viewModel.search.SearchItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+
 
 data class BookUiState(
     val book: BookResponse? = null,
@@ -32,77 +37,79 @@ class BookViewModel(
 
     val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
 
-    fun fetchBook(bookId: Int) {
+    fun loadBook(bookId: Int) {
+        // 1️⃣ Observe database
         viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(loading = true, error = null)
-
-                val book = repository.getBookById(bookId)
-                if (book == null) {
-                    _uiState.value = _uiState.value.copy(
-                        loading = false,
-                        error = "Book not found"
-                    )
-                    return@launch
+            repository.observeBook(bookId)
+                .collect { book ->
+                    _uiState.update {
+                        it.copy(
+                            book = book?.toBookResponse(), // map entity → UI model
+                            loading = false
+                        )
+                    }
                 }
+        }
 
-                _uiState.value = _uiState.value.copy(
-                    loading = false,
-                    book = book
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    loading = false,
-                    error = e.message ?: "Failed to load book"
-                )
-            }
+        // 2️⃣ Trigger refresh from API
+        viewModelScope.launch {
+            _uiState.update { it.copy(loading = true) }
+            repository.refreshBook(bookId)
         }
     }
 
 
-    fun fetchReviews(bookId: Int) {
+
+    fun loadReviews(bookId: Int) {
         viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(loadingReviews = true, error = null)
-
-                val reviews = reviewRepository.fetchBookReviews(bookId)
-                if (reviews.isEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        loadingReviews = false,
-                    )
-                    return@launch
+            reviewRepository.observeBookReviews(bookId)
+                .collect { reviews ->
+                    _uiState.update {
+                        it.copy(
+                            reviews = reviews.map {
+                                PostReviewItem.ReviewItem(it.toReviewResponse())
+                            },
+                            loadingReviews = false
+                        )
+                    }
                 }
+        }
 
-                _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                    reviews = reviews.map { PostReviewItem.ReviewItem(it) }
-                )
-            } catch (e: Exception) {
-                println("Failed to load reviews")
-                println("error: "+e.message)
-                _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                )
-            }
+        viewModelScope.launch {
+            _uiState.update { it.copy(loadingReviews = true) }
+            reviewRepository.refreshBookReviews(bookId)
         }
     }
     fun createReview(bookId: Int, score: Float, text: String) {
         viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(error = null, loadingReviews = true)
-                reviewRepository.createReview(
-                    text = text,
-                    bookId = bookId,
-                    score = score.toDouble()
-                )
-                fetchReviews(bookId)
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                    error = e.message ?: "Failed to create review"
-                )
-            }
+            reviewRepository.createReview(
+                text = text,
+                bookId = bookId,
+                score = score.toDouble()
+            )
+            // ❌ NO manual fetchReviews()
+            // Room auto-emits update
         }
     }
 }
 
+fun Book.toBookResponse(): BookResponse {
+    return BookResponse(
+        id = id,
+        name = name,
+        genre = genre,
+        isbn = isbn,
+        writer = writer,
+        score = score
+    )
+}
+
+fun Review.toReviewResponse(): ReviewResponse {
+    return ReviewResponse(
+        id = id,
+        bookId = bookId,
+        text = text,
+        score = score,
+        time = time
+    )
+}

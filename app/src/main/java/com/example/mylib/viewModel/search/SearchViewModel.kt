@@ -2,6 +2,7 @@ package com.example.mylib.viewModel.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.data.repo.AppDatabase
 import com.example.mylib.data.repo.SearchRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

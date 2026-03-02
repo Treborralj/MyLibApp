@@ -43,8 +43,8 @@ fun BookPage(
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
     LaunchedEffect(bookId) {
-        viewModel.fetchBook(bookId)
-        viewModel.fetchReviews(bookId)
+        viewModel.loadBook(bookId)
+        viewModel.loadReviews(bookId)
     }
     when {
         uiState.loading -> {
