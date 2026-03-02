@@ -38,7 +38,6 @@ class BookViewModel(
     val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
 
     fun loadBook(bookId: Int) {
-        // 1️⃣ Observe database
         viewModelScope.launch {
             repository.observeBook(bookId)
                 .collect { book ->
@@ -49,9 +48,9 @@ class BookViewModel(
                         )
                     }
                 }
+            repository.updateLocalBookScore(bookId)
         }
 
-        // 2️⃣ Trigger refresh from API
         viewModelScope.launch {
             _uiState.update { it.copy(loading = true) }
             repository.refreshBook(bookId)
@@ -87,8 +86,7 @@ class BookViewModel(
                 bookId = bookId,
                 score = score.toDouble()
             )
-            // ❌ NO manual fetchReviews()
-            // Room auto-emits update
+            reviewRepository.updateLocalBookScore(bookId)
         }
     }
 }

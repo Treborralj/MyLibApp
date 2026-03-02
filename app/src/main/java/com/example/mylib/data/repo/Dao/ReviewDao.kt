@@ -17,4 +17,7 @@ interface ReviewDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReview(review: Review)
+
+    @Query("SELECT AVG(score) FROM Review WHERE bookId = :bookId")
+    suspend fun getAverageScoreForBook(bookId: Int): Double?
 }

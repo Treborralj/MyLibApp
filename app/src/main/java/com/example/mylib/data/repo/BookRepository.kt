@@ -2,11 +2,13 @@ package com.example.mylib.data.repo
 
 import com.example.mylib.data.remote.BookApi
 import com.example.mylib.data.repo.Dao.BookDao
+import com.example.mylib.data.repo.Dao.ReviewDao
 import kotlinx.coroutines.flow.Flow
 
 class BookRepository(
     private val api: BookApi,
-    private val bookDao: BookDao
+    private val bookDao: BookDao,
+    private val reviewDao: ReviewDao
 ) {
 
     fun observeBook(bookId: Int): Flow<Book?> {
@@ -27,6 +29,13 @@ class BookRepository(
                     score = it.score ?: 0.0
                 )
             )
+        }
+    }
+
+    suspend fun updateLocalBookScore(bookId: Int) {
+        val averageScore = reviewDao.getAverageScoreForBook(bookId)
+        if (averageScore != null) {
+            bookDao.updateBookScore(bookId, averageScore)
         }
     }
 }

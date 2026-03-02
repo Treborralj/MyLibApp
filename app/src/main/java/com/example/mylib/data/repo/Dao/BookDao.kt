@@ -18,6 +18,9 @@ interface BookDao {
     @Query("SELECT * FROM book WHERE id = :id")
     fun observeBookById(id: Int): Flow<Book?>
 
+    @Query("UPDATE Book SET score = :score WHERE id = :bookId")
+    suspend fun updateBookScore(bookId: Int, score: Double)
+
     @Query("SELECT * FROM book " +
                     "WHERE (:term IS NULL " +
                     "OR isbn = :term " +

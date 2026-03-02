@@ -3,13 +3,15 @@ package com.example.mylib.data.repo
 import com.example.mylib.data.models.ReviewRequest
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.remote.ReviewApi
+import com.example.mylib.data.repo.Dao.BookDao
 import com.example.mylib.data.repo.Dao.ReviewDao
 import kotlinx.coroutines.flow.Flow
 
 
 class ReviewRepository(
     private val api: ReviewApi,
-    private val reviewDao: ReviewDao
+    private val reviewDao: ReviewDao,
+    private val bookDao: BookDao
 ) {
 
     fun observeBookReviews(bookId: Int): Flow<List<Review>> {
@@ -23,7 +25,7 @@ class ReviewRepository(
             remoteReviews.map {
                 Review(
                     id = it.id,
-                    bookId = it.bookId,
+                    bookId = bookId,
                     username = it.username ?: "placeholder",
                     text = it.text,
                     score = it.score,
@@ -31,6 +33,13 @@ class ReviewRepository(
                 )
             }
         )
+    }
+
+    suspend fun updateLocalBookScore(bookId: Int) {
+        val averageScore = reviewDao.getAverageScoreForBook(bookId)
+        if (averageScore != null) {
+            bookDao.updateBookScore(bookId, averageScore)
+        }
     }
 
     suspend fun fetchUserReviews(username: String): List<ReviewResponse> {
@@ -49,7 +58,7 @@ class ReviewRepository(
         reviewDao.insertReview(
             Review(
                 id = response.id,
-                bookId = response.bookId,
+                bookId = bookId,
                 username = response.username ?: "placeholder",
                 text = response.text,
                 score = response.score,
@@ -76,7 +85,6 @@ class ReviewRepository(
 
     suspend fun deleteReview(id: Int) {
         api.deleteReview(id)
-        // You might also want to delete it from the local DAO
-        // reviewDao.deleteReviewById(id)
+
     }
 }

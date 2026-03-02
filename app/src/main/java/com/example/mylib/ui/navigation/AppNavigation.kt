@@ -67,8 +67,8 @@ fun AppNavigation(){
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
 
-    val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao())
-    val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao())
+    val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
+    val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository)
 
     val postRepository = PostRepository(RetrofitClient.postApi)
