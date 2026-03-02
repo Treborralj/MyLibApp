@@ -15,4 +15,8 @@ class AuthenticationRepository(
     suspend fun signup(username: String, password: String): SignupResponse {
         return api.signup(SignupRequest(username, password))
     }
+
+    suspend fun getLoggedIn(): Map<String, String> {
+        return api.getLoggedIn()
+    }
 }

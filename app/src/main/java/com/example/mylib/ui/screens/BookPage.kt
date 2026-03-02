@@ -1,6 +1,5 @@
 package com.example.mylib.ui.screens
 
-import com.example.mylib.data.models.BookResponse
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,10 +12,13 @@ import androidx.compose.ui.Modifier
 import com.example.mylib.viewModel.BookViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.mylib.R
@@ -25,13 +27,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.mylib.ui.components.StarRating
 import androidx.compose.runtime.setValue
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
+import com.example.mylib.ui.components.PostFrame
+import com.example.mylib.ui.components.ReviewCreatorDialog
 
 
 @Composable
@@ -44,6 +44,7 @@ fun BookPage(
     val uiState by viewModel.uiState.collectAsState()
     LaunchedEffect(bookId) {
         viewModel.fetchBook(bookId)
+        viewModel.fetchReviews(bookId)
     }
     when {
         uiState.loading -> {
@@ -58,8 +59,7 @@ fun BookPage(
             val book = uiState.book!!
             var userRating by remember(bookId) { mutableStateOf(0f) }
             var expanded by remember { mutableStateOf(false) }
-
-
+            var showReviewDialog by remember { mutableStateOf(false) }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -145,10 +145,53 @@ fun BookPage(
                     }
                 }
                 //TEMPORARY STAR RATING, WILL BE MOVED TO REVIEWS?
-                StarRating(
-                    rating = userRating,
-                    onRatingChange = { userRating = it }
+
+                Button(onClick = { showReviewDialog = true }) {
+                    Text("Write Review")
+                }
+                ReviewCreatorDialog(
+                    open = showReviewDialog,
+                    bookTitle = book.name ?: "Unknown Title",
+                    initialRating = userRating,
+                    onDismiss = { showReviewDialog = false },
+                    onSubmit = { rating, text ->
+                        showReviewDialog = false
+                        viewModel.createReview(
+                            bookId = bookId,
+                            score = rating,
+                            text = text
+                        )
+                    }
                 )
+
+                when {
+                    uiState.loadingReviews -> {
+                        Text("Loading reviews...")
+                    }
+                    !uiState.reviews.isEmpty() -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ){
+                            items(
+                                uiState.reviews,
+                            ){ item ->
+
+                                PostFrame("Sample User", book.name, content = item)
+
+                            }
+                        }
+                    }
+                    uiState.reviews.isEmpty() -> {
+                        Text("This book has no reviews yet")
+                    }
+                }
+
+
+
+
+
+
                 Spacer(modifier = Modifier.weight(0.8f))
 
             }
