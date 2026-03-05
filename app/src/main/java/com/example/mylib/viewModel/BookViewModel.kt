@@ -3,10 +3,13 @@ package com.example.mylib.viewModel
 import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.data.models.BookRequest
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.models.UserResponse
+import com.example.mylib.data.repo.ListRepository
 import com.example.mylib.data.repo.ReviewRepository
+import com.example.mylib.viewModel.Lists.ListType
 import com.example.mylib.viewModel.search.SearchItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,17 +22,17 @@ data class BookUiState(
     val loading: Boolean = false,
     val loadingReviews: Boolean = false,
     val error: String? = null,
-    val reviews: List<PostReviewItem.ReviewItem> = emptyList()
+    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
 )
 
 
 class BookViewModel(
     private val repository: BookRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val listRepository: ListRepository,
 ) : ViewModel(){
 
     private val _uiState = MutableStateFlow(BookUiState())
-
     val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
 
     fun fetchBook(bookId: Int) {
@@ -50,6 +53,7 @@ class BookViewModel(
                     loading = false,
                     book = book
                 )
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     loading = false,
@@ -103,6 +107,28 @@ class BookViewModel(
                 )
             }
         }
+    }
+
+    fun addBookToList(listType: ListType, bookId: Int){
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(error = null)
+
+                val request = BookRequest(id = bookId)
+
+                when(listType){
+                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(request)
+                    ListType.AM_READING -> listRepository.addBookToAmReading(request)
+                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(request)
+                }
+
+            } catch (e: Exception){
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+
     }
 }
 
