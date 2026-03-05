@@ -15,6 +15,7 @@
     import com.example.mylib.data.models.ReviewResponse
     import com.example.mylib.data.remote.RetrofitClient
     import com.example.mylib.data.repo.AuthenticationRepository
+    import com.example.mylib.data.repo.ListRepository
     import com.example.mylib.data.repo.PostRepository
     import com.example.mylib.data.repo.ReviewRepository
     import com.example.mylib.data.repo.SearchRepository
@@ -34,11 +35,13 @@
     import com.example.mylib.ui.screens.ReviewEditor
     import com.example.mylib.viewModel.BookViewModel
     import com.example.mylib.viewModel.HomefeedViewModel
+    import com.example.mylib.viewModel.Lists.ListViewModel
     import com.example.mylib.viewModel.PostEditorViewModel
     import com.example.mylib.viewModel.ProfileViewModel
     import com.example.mylib.viewModel.ReviewEditorViewModel
     import com.example.mylib.viewModel.factory.BookViewModelFactory
     import com.example.mylib.viewModel.factory.HomefeedViewModelFactory
+    import com.example.mylib.viewModel.factory.ListViewModelFactory
     import com.example.mylib.viewModel.factory.PostEditorViewModelFactory
     import com.example.mylib.viewModel.factory.ProfileViewModelFactory
     import com.example.mylib.viewModel.factory.ReviewEditorViewModelFactory
@@ -59,11 +62,17 @@
         val homefeedFactory = HomefeedViewModelFactory(userRepository)
         val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
 
+        val listRepository = ListRepository(RetrofitClient.listApi)
+        val listFactory = ListViewModelFactory(listRepository)
+        val listViewModel: ListViewModel = viewModel(factory = listFactory)
+
         val navigationBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navigationBackStackEntry?.destination?.route
+
         val bookRepository = BookRepository(RetrofitClient.bookApi)
         val reviewRepository = ReviewRepository(RetrofitClient.reviewApi)
-        val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository)
+        val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository, listRepository)
+        val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
 
         val postRepository = PostRepository(RetrofitClient.postApi)
         val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
@@ -113,7 +122,7 @@
                         ?.toIntOrNull()
                         ?: return@composable
 
-                    val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
+
                     BookPage(
                         bookId = bookId,
                         viewModel = bookViewModel,
@@ -146,7 +155,9 @@
                     ProfilePage(username = username,viewModel = profileViewModel, navController = navController)
                 }
                 composable(Routes.Lists.route){
-                    ListPage()
+                    ListPage(
+                        listViewModel = listViewModel
+                    )
                 }
 
                 composable(Routes.PostEditor.route) {
