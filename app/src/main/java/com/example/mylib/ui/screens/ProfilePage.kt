@@ -25,6 +25,8 @@ import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.PostResponse
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.ui.components.PostFrame
+import com.example.mylib.ui.components.ProfilePosts
+import com.example.mylib.ui.components.ProfileReviews
 import com.example.mylib.ui.navigation.Routes
 import com.example.mylib.viewModel.BookViewModel
 import com.example.mylib.viewModel.HomefeedViewModel
@@ -39,24 +41,10 @@ fun ProfilePage(
 ){
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
-    val refreshReviews =
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.getStateFlow("refreshReviews", false)
-            ?.collectAsState()
+
     LaunchedEffect(key1 = MainActivity.bearerToken) {
         viewModel.fetchPosts(username)
-    }
-    LaunchedEffect(refreshReviews?.value) {
-        if (refreshReviews?.value == true) {
-            viewModel.fetchReviews(username)
-            navController.currentBackStackEntry?.savedStateHandle?.set("refreshReviews", false)
-        }
-    }
-    LaunchedEffect(uiState.viewingReviews, username) {
-        if (uiState.viewingReviews) {
-            viewModel.fetchReviews(username)
-        }
+        viewModel.fetchReviews(username,false)
     }
 
     Column(
@@ -74,44 +62,8 @@ fun ProfilePage(
                     style = MaterialTheme.typography.headlineMedium
                 )
 
-                uiState.error?.let{ msg ->
-                    Text(
-                        text = msg,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
+                ProfilePosts(viewModel,navController,username)
 
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    when {
-                        uiState.loadingPosts -> {
-                            Text("Loading posts...")
-                        }
-                        !uiState.posts.isEmpty() -> {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ){
-                                items<PostReviewItem.PostItem>(
-                                    items = uiState.posts
-                                ) { item ->
-                                    PostFrame(
-                                        username,
-                                        "Post Title",
-                                        content = PostReviewItem.PostItem(item.post)
-                                    )
-                                }
-                            }
-                        }
-                        uiState.posts.isEmpty() -> {
-                            Text("This account has no posts yet")
-                        }
-                    }
-                }
             }
 
             uiState.viewingReviews -> {
@@ -122,58 +74,9 @@ fun ProfilePage(
                     text = "Reviews",
                     style = MaterialTheme.typography.headlineMedium
                 )
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    when {
-                        uiState.loadingReviews -> {
-                            Text("Loading reviews...")
-                        }
-                        !uiState.reviews.isEmpty() -> {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ){
-                                items<PostReviewItem.ReviewItem>(
-                                    items = uiState.reviews
-                                ) { item ->
-                                    if (username == MainActivity.loggedInUser) {
-                                        Column(){
-                                            PostFrame(
-                                                username,
-                                                "Book Title",
-                                                content = PostReviewItem.ReviewItem(item.review)
-                                            )
 
-                                            Button(onClick = {
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewScore", item.review.score)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookId", item.review.bookId)
-                                                navController.navigate(Routes.ReviewEditor.route)
-                                            }) {
-                                                Text("Edit")
-                                            }
-                                        }
-                                    }
-                                    else {
-                                        PostFrame(
-                                            username,
-                                            "Book Title",
-                                            content = PostReviewItem.ReviewItem(item.review)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        uiState.reviews.isEmpty() -> {
-                            Text("This account has no reviews yet")
-                        }
-                    }
-                }
+                ProfileReviews(viewModel,navController,username)
+
             }
         }
 

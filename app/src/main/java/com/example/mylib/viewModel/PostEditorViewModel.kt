@@ -51,7 +51,6 @@ class PostEditorViewModel(
                     loading = false,
                     error = e.message ?: "Couldn't save changes"
                 )
-                println("error creating/editing post: "+e)
             }
         }
     }

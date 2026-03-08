@@ -16,12 +16,15 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 data class ProfileUiState(
-    val loadingPosts: Boolean = false,
-    val loadingReviews: Boolean = false,
-    val error: String? = null,
-    val posts: List<PostReviewItem.PostItem> = emptyList(),
-    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
     val viewingReviews: Boolean = false,
+
+    val posts: List<PostReviewItem.PostItem> = emptyList(),
+    val postsError: String = "",
+    val loadingPosts: Boolean = false,
+
+    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
+    val reviewsError: String = "",
+    val loadingReviews: Boolean = false,
 )
 
 
@@ -35,10 +38,10 @@ class ProfileViewModel(
 
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    fun fetchPosts(username: String) {
+    fun fetchPosts(username: String, viewingReviews: Boolean = false) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loadingPosts = true, error = null, viewingReviews = false)
+                _uiState.value = _uiState.value.copy(postsError = "", loadingPosts = true, viewingReviews = viewingReviews)
 
                 val posts = postRepository.getAccountPosts(username);
                 if (posts.isEmpty()) {
@@ -54,20 +57,18 @@ class ProfileViewModel(
                     posts = postsConverted,
                 )
             } catch (e: Exception) {
-                println("Failed to load posts")
-                println("error: "+e.message)
                 _uiState.value = _uiState.value.copy(
                     loadingPosts = false,
-                    error = "Failed to load posts"
+                    postsError = "Failed to load posts"
                 )
             }
         }
     }
 
-    fun fetchReviews(username: String) {
+    fun fetchReviews(username: String, viewingReviews: Boolean = true) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loadingReviews = true, error = null, viewingReviews = true)
+                _uiState.value = _uiState.value.copy(loadingReviews = true, reviewsError = "", viewingReviews = viewingReviews)
 
                 val reviews = reviewRepository.fetchUserReviews(username);
                 if (reviews.isEmpty()) {
@@ -82,11 +83,9 @@ class ProfileViewModel(
                     reviews = reviews.map { PostReviewItem.ReviewItem(it) },
                 )
             } catch (e: Exception) {
-                println("Failed to load reviews")
-                println("error: "+e.message)
                 _uiState.value = _uiState.value.copy(
                     loadingReviews = false,
-                    error = "Failed to load reviews"
+                    reviewsError = "Failed to load reviews"
                 )
             }
         }

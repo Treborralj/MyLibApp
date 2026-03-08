@@ -31,10 +31,7 @@ class ReviewEditorViewModel(
             var response: ReviewResponse? = null
             try{
                 if(id != null) {
-                    println("attempting to edit review with:\ntext = " + text +
-                        "\nid = "+id+"\nscore= "+score)
                     response = repository.editReview(text,id, score)
-                    println("edit response: "+response.toString())
                 }
                 else if (bookId != null) {
                     response = repository.createReview(text, bookId, score)

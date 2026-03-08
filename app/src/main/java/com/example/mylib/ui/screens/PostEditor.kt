@@ -50,6 +50,15 @@ fun PostEditor(
 
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(uiState.result, uiState.error) {
+        if (uiState.result != null && uiState.error == null) {
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("refreshPosts", true)
+
+            navController.popBackStack()
+        }
+    }
 
     Card(
         modifier = Modifier

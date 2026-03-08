@@ -165,12 +165,15 @@
                     val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText")
                     val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime")
 
-
-                    val post = PostResponse(
-                        id = id,
-                        text = text,
-                        time = time,
-                    )
+                    val post: PostResponse? = if (id != null) {
+                        PostResponse(
+                            id = id,
+                            text = text ?: "",
+                            time = time ?: "",
+                        )
+                    } else {
+                        null
+                    }
 
                     val postEditorViewModel: PostEditorViewModel = viewModel(factory = postEditorFactory)
                     PostEditor(
@@ -190,10 +193,10 @@
                     val review: ReviewResponse? = if (id != null && bookId != null) {
                         ReviewResponse(
                             id = id,
-                            text = text,
-                            time = time,
+                            text = text ?: "",
+                            time = time ?: "",
                             score = score ?: 0.0,
-                            bookId = bookId
+                            bookId = bookId,
                         )
                     } else {
                         null

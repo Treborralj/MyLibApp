@@ -1,7 +1,8 @@
 package com.example.mylib.data.repo
 
-import com.example.mylib.data.models.ReviewRequest
+import com.example.mylib.data.models.ReviewCreateRequest
 import com.example.mylib.data.models.ReviewResponse
+import com.example.mylib.data.models.ReviewUpdateRequest
 import com.example.mylib.data.remote.ReviewApi
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -18,20 +19,11 @@ class ReviewRepository(private val api: ReviewApi) {
     }
 
     suspend fun createReview(text: String?, bookId: Int, score: Double): ReviewResponse {
-       var txt: String = ""
-        if (text != null) {
-            txt = text
-        }
-        val hashMap = HashMap<String, Any>();
-        hashMap["text"] = txt
-        hashMap["bookId"] = bookId
-        hashMap["score"] = score
-        return api.createReview(hashMap)
+        return api.createReview(ReviewCreateRequest(bookId,text,score))
     }
 
     suspend fun editReview(text: String, id: Int, score: Double): ReviewResponse {
-        val body = ReviewRequest(reviewId = id, text = text, score = score)
-        return api.editReview(body)
+        return api.editReview(ReviewUpdateRequest(id,text,score))
     }
 
     suspend fun deleteReview(id: Int) {
