@@ -26,7 +26,7 @@ interface ReviewApi {
     ): List<ReviewResponse>
 
     @POST("reviews/add")
-    suspend fun createReview(@Body() body:HashMap<String, Any>): ReviewResponse
+    suspend fun createReview(@Body() body:ReviewRequest): ReviewResponse
 
     @PATCH("reviews/edit")
     suspend fun editReview(@Body() body: ReviewRequest): ReviewResponse
