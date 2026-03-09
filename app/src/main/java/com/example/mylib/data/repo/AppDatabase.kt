@@ -15,6 +15,7 @@ import com.example.mylib.data.repo.Dao.PostDao
 import com.example.mylib.data.repo.Dao.ReviewDao
 import com.example.mylib.data.repo.Dao.UserDao
 import org.checkerframework.checker.units.qual.Time
+import org.checkerframework.common.aliasing.qual.Unique
 import java.sql.Blob
 
 
@@ -68,7 +69,11 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-@Entity
+@Entity(
+    indices = [
+        Index(value = ["name"], unique = true)
+    ]
+)
 data class User(
     @PrimaryKey val id: Int,
     val name: String,
@@ -131,7 +136,7 @@ data class BookList(
     foreignKeys = [
         ForeignKey(
             entity = BookList::class,
-            parentColumns = ["id"],
+            parentColumns = ["listId"],
             childColumns = ["listId"],
             onDelete = ForeignKey.CASCADE
         ),
@@ -148,25 +153,25 @@ data class BookListCrossRef(
     val bookId: Int
 )
 @Entity(
-    primaryKeys= ["followingId", "followedId"],
+    primaryKeys= ["followingUsername", "followedUsername"],
     foreignKeys = [
         ForeignKey(
             entity = User::class,
-            parentColumns = ["id"],
-            childColumns = ["followingId"],
+            parentColumns = ["name"],
+            childColumns = ["followingUsername"],
             onDelete = ForeignKey.CASCADE
         ),
        ForeignKey(
            entity = User::class,
-           parentColumns = ["id"],
-           childColumns = ["followedId"],
+           parentColumns = ["name"],
+           childColumns = ["followedUsername"],
            onDelete = ForeignKey.CASCADE
        )
    ]
 )
 data class Following
 (
-    val followingId: Int,
-    val followedId: Int
+    val followingUsername: String,
+    val followedUsername: String
 )
 

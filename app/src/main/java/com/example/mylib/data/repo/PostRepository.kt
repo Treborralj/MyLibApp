@@ -18,11 +18,10 @@ class PostRepository(
         hashMap["text"] = text
         val response = api.createPost(hashMap)
         
-        // Use the response from API to get the correct ID and timestamp for local DB
         postDao.insert(
             Post(
                 id = response.id ?: 0,
-                accountId = 0, // You might need the actual accountId here
+                accountId = 0,
                 text = response.text,
                 time = response.time,
                 //image = null,
