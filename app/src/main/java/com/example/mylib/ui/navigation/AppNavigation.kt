@@ -47,6 +47,8 @@ import com.example.mylib.viewModel.search.SearchViewModel
 
 @Composable
 fun AppNavigation(){
+    val context = LocalContext.current
+    val db = AppDatabase.getInstance(context)
     val navController = rememberNavController()
 
     val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi)
@@ -57,21 +59,19 @@ fun AppNavigation(){
     val bookFactory = SearchViewModelFactory(searchRepository)
     val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
-    val userRepository = UserRepository(RetrofitClient.userApi)
+    val userRepository = UserRepository(RetrofitClient.userApi, db.postDao())
     val homefeedFactory = HomefeedViewModelFactory(userRepository)
     val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
 
     val navigationBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navigationBackStackEntry?.destination?.route
 
-    val context = LocalContext.current
-    val db = AppDatabase.getInstance(context)
 
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
     val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository)
 
-    val postRepository = PostRepository(RetrofitClient.postApi)
+    val postRepository = PostRepository(RetrofitClient.postApi, db.postDao())
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 

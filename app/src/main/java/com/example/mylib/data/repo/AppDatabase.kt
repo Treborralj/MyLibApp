@@ -10,9 +10,12 @@ import androidx.room.RoomDatabase
 import com.example.mylib.data.repo.Dao.BookDao
 import com.example.mylib.data.repo.Dao.BookListCrossRefDao
 import com.example.mylib.data.repo.Dao.BookListDao
+import com.example.mylib.data.repo.Dao.FollowingDao
 import com.example.mylib.data.repo.Dao.PostDao
 import com.example.mylib.data.repo.Dao.ReviewDao
 import com.example.mylib.data.repo.Dao.UserDao
+import org.checkerframework.checker.units.qual.Time
+import java.sql.Blob
 
 
 @Database(
@@ -20,14 +23,27 @@ import com.example.mylib.data.repo.Dao.UserDao
         User::class,
         Book::class,
         Review::class,
+        Post::class,
+        Following::class,
+        BookList::class,
+        BookListCrossRef::class
                ],
-    version = 1
+    version = 4
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
     abstract fun bookDao(): BookDao
     abstract fun reviewDao(): ReviewDao
+    abstract fun postDao(): PostDao
+
+    abstract fun bookListDao(): BookListDao
+    abstract fun bookListCrossRefDao(): BookListCrossRefDao
+    abstract fun followingDao(): FollowingDao
+
+
+
+
 
     companion object {
 
@@ -78,10 +94,15 @@ data class Review(
     val time: String?
 )
 
-/*
+
 @Entity
 data class Post(
-    @PrimaryKey val id: Int
+    @PrimaryKey val id: Int,
+     val accountId: Int,
+    val text: String?,
+    val time: String?,
+    //val image: Blob?,
+    val imageType: String?
 )
 
 @Entity(
@@ -102,6 +123,7 @@ data class BookList(
     val accountId: Int,
     val type: String // "wishlist", "reading", "finished"
 )
+
 
 
 @Entity(
@@ -125,4 +147,26 @@ data class BookListCrossRef(
     val listId: Int,
     val bookId: Int
 )
-*/
+@Entity(
+    primaryKeys= ["followingId", "followedId"],
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class,
+            parentColumns = ["id"],
+            childColumns = ["followingId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+       ForeignKey(
+           entity = User::class,
+           parentColumns = ["id"],
+           childColumns = ["followedId"],
+           onDelete = ForeignKey.CASCADE
+       )
+   ]
+)
+data class Following
+(
+    val followingId: Int,
+    val followedId: Int
+)
+
