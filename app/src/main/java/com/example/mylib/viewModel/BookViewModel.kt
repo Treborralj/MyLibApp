@@ -1,14 +1,18 @@
 package com.example.mylib.viewModel
 
+import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.data.models.BookRequest
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.models.UserResponse
 import com.example.mylib.data.repo.Book
 import com.example.mylib.data.repo.BookRepository
 import com.example.mylib.data.repo.Review
+import com.example.mylib.data.repo.ListRepository
 import com.example.mylib.data.repo.ReviewRepository
+import com.example.mylib.viewModel.Lists.ListType
 import com.example.mylib.viewModel.search.SearchItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,25 +20,23 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
-
 data class BookUiState(
     val book: BookResponse? = null,
     //val reviews: List<Review> = emptyList(),
     val loading: Boolean = false,
     val loadingReviews: Boolean = false,
     val error: String? = null,
-    val reviews: List<PostReviewItem.ReviewItem> = emptyList()
+    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
 )
 
 
 class BookViewModel(
     private val repository: BookRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val listRepository: ListRepository,
 ) : ViewModel(){
 
     private val _uiState = MutableStateFlow(BookUiState())
-
     val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
 
     fun loadBook(bookId: Int) {
@@ -81,25 +83,44 @@ class BookViewModel(
     }
     fun createReview(bookId: Int, score: Float, text: String) {
         viewModelScope.launch {
-            reviewRepository.createReview(
-                text = text,
-                bookId = bookId,
-                score = score.toDouble()
-            )
-            reviewRepository.updateLocalBookScore(bookId)
+            try {
+                _uiState.value = _uiState.value.copy(error = null, loadingReviews = true)
+                reviewRepository.createReview(
+                    text = text,
+                    bookId = bookId,
+                    score = score.toDouble()
+                )
+                fetchReviews(bookId)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    loadingReviews = false,
+                    error = e.message ?: "Failed to create review"
+                )
+            }
         }
     }
-}
 
-fun Book.toBookResponse(): BookResponse {
-    return BookResponse(
-        id = id,
-        name = name,
-        genre = genre,
-        isbn = isbn,
-        writer = writer,
-        score = score
-    )
+    fun addBookToList(listType: ListType, bookId: Int){
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(error = null)
+
+                val request = BookRequest(id = bookId)
+
+                when(listType){
+                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(request)
+                    ListType.AM_READING -> listRepository.addBookToAmReading(request)
+                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(request)
+                }
+
+            } catch (e: Exception){
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+
+    }
 }
 
 fun Review.toReviewResponse(): ReviewResponse {

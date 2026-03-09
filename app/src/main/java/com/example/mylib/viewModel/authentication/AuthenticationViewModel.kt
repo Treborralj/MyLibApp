@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.MainActivity
-import com.example.mylib.data.models.SignupResponse
 
 
 class AuthenticationViewModel(

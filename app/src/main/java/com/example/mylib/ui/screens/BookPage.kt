@@ -32,6 +32,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
 import com.example.mylib.ui.components.PostFrame
 import com.example.mylib.ui.components.ReviewCreatorDialog
+import com.example.mylib.viewModel.Lists.ListType
 
 
 @Composable
@@ -128,18 +129,21 @@ fun BookPage(
                             text = { Text("Want to Read") },
                             onClick = {
                                 expanded = false
+                                viewModel.addBookToList(ListType.WANT_TO_READ, bookId)
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Currently Reading") },
+                            text = { Text("Am reading") },
                             onClick = {
                                 expanded = false
+                                viewModel.addBookToList(ListType.AM_READING, bookId)
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Read") },
+                            text = { Text("Have Read") },
                             onClick = {
                                 expanded = false
+                                viewModel.addBookToList(ListType.HAVE_READ, bookId)
                             }
                         )
                     }
@@ -186,11 +190,6 @@ fun BookPage(
                         Text("This book has no reviews yet")
                     }
                 }
-
-
-
-
-
 
                 Spacer(modifier = Modifier.weight(0.8f))
 
