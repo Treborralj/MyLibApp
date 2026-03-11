@@ -42,7 +42,7 @@ class FollowingRepository (
         followingDao.clearAndInsert(loggedinUser, remoteFollowing)
     }
 
-    fun observeFollowing(loggedinUser: String): Flow<List<Following>> {
+    fun observeFollowing(loggedinUser: String): Flow<List<String>> {
         return followingDao.getFollowedUsers(loggedinUser)
     }
 

@@ -44,51 +44,10 @@ import com.example.mylib.viewModel.factory.ProfileViewModelFactory
 import com.example.mylib.viewModel.factory.ReviewEditorViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
 import com.example.mylib.viewModel.search.SearchViewModel
-    import BookRepository
-    import androidx.compose.foundation.layout.padding
-    import androidx.compose.material3.Scaffold
-    import androidx.compose.runtime.Composable
-    import androidx.compose.runtime.getValue
-    import androidx.compose.ui.Modifier
-    import androidx.lifecycle.viewmodel.compose.viewModel
-    import androidx.navigation.compose.NavHost
-    import androidx.navigation.compose.composable
-    import androidx.navigation.compose.currentBackStackEntryAsState
-    import androidx.navigation.compose.rememberNavController
-    import com.example.mylib.data.models.PostResponse
-    import com.example.mylib.data.models.ReviewResponse
-    import com.example.mylib.data.remote.RetrofitClient
-    import com.example.mylib.data.repo.AuthenticationRepository
-    import com.example.mylib.data.repo.ListRepository
-    import com.example.mylib.data.repo.PostRepository
-    import com.example.mylib.data.repo.ReviewRepository
-    import com.example.mylib.data.repo.SearchRepository
-    import com.example.mylib.data.repo.UserRepository
-    import com.example.mylib.ui.screens.SearchPage
-    import com.example.mylib.ui.screens.HomeFeedPage
-    import com.example.mylib.ui.screens.ListPage
-    import com.example.mylib.ui.screens.LoginPage
-    import com.example.mylib.ui.screens.ProfilePage
-    import com.example.mylib.ui.screens.SignupPage
-    import com.example.mylib.viewModel.authentication.AuthenticationViewModel
-    import com.example.mylib.viewModel.search.SearchViewModel
-    import com.example.mylib.viewModel.factory.AuthenticationViewModelFactory
-    import com.example.mylib.viewModel.factory.SearchViewModelFactory
-    import com.example.mylib.ui.screens.BookPage
-    import com.example.mylib.ui.screens.PostEditor
-    import com.example.mylib.ui.screens.ReviewEditor
-    import com.example.mylib.viewModel.BookViewModel
-    import com.example.mylib.viewModel.HomefeedViewModel
-    import com.example.mylib.viewModel.Lists.ListViewModel
-    import com.example.mylib.viewModel.PostEditorViewModel
-    import com.example.mylib.viewModel.ProfileViewModel
-    import com.example.mylib.viewModel.ReviewEditorViewModel
-    import com.example.mylib.viewModel.factory.BookViewModelFactory
-    import com.example.mylib.viewModel.factory.HomefeedViewModelFactory
-    import com.example.mylib.viewModel.factory.ListViewModelFactory
-    import com.example.mylib.viewModel.factory.PostEditorViewModelFactory
-    import com.example.mylib.viewModel.factory.ProfileViewModelFactory
-    import com.example.mylib.viewModel.factory.ReviewEditorViewModelFactory
+import com.example.mylib.data.repo.ListRepository
+import com.example.mylib.viewModel.Lists.ListViewModel
+import com.example.mylib.viewModel.factory.ListViewModelFactory
+
 
 @Composable
 fun AppNavigation(){
@@ -114,18 +73,13 @@ fun AppNavigation(){
 
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
     val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
-    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository)
-        val listRepository = ListRepository(RetrofitClient.listApi)
-        val listFactory = ListViewModelFactory(listRepository)
-        val listViewModel: ListViewModel = viewModel(factory = listFactory)
+    val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
+    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository, listRepository)
+    val listFactory = ListViewModelFactory(listRepository)
+    val listViewModel: ListViewModel = viewModel(factory = listFactory)
 
-        val navigationBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navigationBackStackEntry?.destination?.route
 
-        val bookRepository = BookRepository(RetrofitClient.bookApi)
-        val reviewRepository = ReviewRepository(RetrofitClient.reviewApi)
-        val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository, listRepository)
-        val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
+    val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
 
     val postRepository = PostRepository(RetrofitClient.postApi, db.postDao())
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)

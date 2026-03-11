@@ -1,6 +1,5 @@
 package com.example.mylib.viewModel
 
-import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.data.models.BookRequest
@@ -60,7 +59,6 @@ class BookViewModel(
     }
 
 
-
     fun loadReviews(bookId: Int) {
         viewModelScope.launch {
             reviewRepository.observeBookReviews(bookId)
@@ -90,7 +88,6 @@ class BookViewModel(
                     bookId = bookId,
                     score = score.toDouble()
                 )
-                fetchReviews(bookId)
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     loadingReviews = false,
@@ -108,9 +105,9 @@ class BookViewModel(
                 val request = BookRequest(id = bookId)
 
                 when(listType){
-                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(request)
-                    ListType.AM_READING -> listRepository.addBookToAmReading(request)
-                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(request)
+                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(0,request)
+                    ListType.AM_READING -> listRepository.addBookToAmReading(0,request)
+                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(0,request)
                 }
 
             } catch (e: Exception){
@@ -130,5 +127,15 @@ fun Review.toReviewResponse(): ReviewResponse {
         text = text,
         score = score,
         time = time
+    )
+}
+fun Book.toBookResponse(): BookResponse {
+    return BookResponse(
+        id = id,
+        name = name,
+        genre = genre,
+        isbn = isbn,
+        writer = writer,
+        score = score
     )
 }
