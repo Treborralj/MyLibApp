@@ -36,9 +36,9 @@ class ListViewModel(private val repository: ListRepository): ViewModel(){
             _uiState.update { it.copy(isLoading = true, error = null) }
             try{
                 val books = when(listType){
-                    ListType.WANT_TO_READ -> repository.getWantToRead()
-                    ListType.AM_READING -> repository.getAmReading()
-                    ListType.HAVE_READ -> repository.getHaveRead()
+                    ListType.WANT_TO_READ -> repository.getWantToRead(0)
+                    ListType.AM_READING -> repository.getAmReading(0)
+                    ListType.HAVE_READ -> repository.getHaveRead(0)
                 }
                 _uiState.update { state ->
                     when(listType){
@@ -76,9 +76,9 @@ class ListViewModel(private val repository: ListRepository): ViewModel(){
             }
             try {
                 when(listType){
-                    ListType.WANT_TO_READ -> repository.removeBookFromWantToRead(bookId)
-                    ListType.AM_READING -> repository.removeBookFromAmReading(bookId)
-                    ListType.HAVE_READ -> repository.removeBookFromHaveRead(bookId)
+                    ListType.WANT_TO_READ -> repository.removeBookFromWantToRead(0,bookId)
+                    ListType.AM_READING -> repository.removeBookFromAmReading(0,bookId)
+                    ListType.HAVE_READ -> repository.removeBookFromHaveRead(0,bookId)
                 }
             }catch(e: Exception){
                 _uiState.value = beforeState.copy(
