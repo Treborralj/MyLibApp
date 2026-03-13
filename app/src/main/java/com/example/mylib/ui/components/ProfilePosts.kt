@@ -82,19 +82,26 @@ fun ProfilePosts(
                     items(
                         items = uiState.posts
                     ) { item ->
+
                         PostFrame(
                             username,
                             "Post Title",
                             content = PostReviewItem.PostItem(item.post)
                         )
-                        Button(onClick = {
-                            navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
-                            navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
-                            navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
-                            navController.navigate(Routes.PostEditor.route)
-                        }) {
-                            Text("Edit")
+
+                        if (username == MainActivity.loggedInUser) {
+                            Button(onClick = {
+                                navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
+                                navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
+                                navController.navigate(Routes.PostEditor.route)
+                            }) {
+                                Text("Edit")
+                            }
+
                         }
+
+
                     }
                 }
             }

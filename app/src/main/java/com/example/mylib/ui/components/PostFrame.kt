@@ -52,7 +52,7 @@ fun PostFramePreview(
                 Row() {
                     Image(
                         painter = painterResource(R.drawable.profile_pic_placeholder),
-                        contentDescription = "Book cover",
+                        contentDescription = "Profile Picture",
                         modifier = Modifier.size(width = 56.dp, height = 79.dp)
                     )
                     Text(

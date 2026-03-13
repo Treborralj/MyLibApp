@@ -18,7 +18,7 @@ class ReviewRepository(private val api: ReviewApi) {
         return api.fetchBookReviews(bookId = bookId)
     }
 
-    suspend fun createReview(text: String?, bookId: Int, score: Double): ReviewResponse {
+    suspend fun createReview(text: String, bookId: Int, score: Double): ReviewResponse {
         return api.createReview(ReviewCreateRequest(bookId,text,score))
     }
 
