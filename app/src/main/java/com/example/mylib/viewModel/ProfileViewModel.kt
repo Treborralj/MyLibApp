@@ -20,6 +20,9 @@ import java.time.LocalDateTime
 
 data class ProfileUiState(
     val viewingReviews: Boolean = false,
+    val viewingFollowers: Boolean = false,
+    val viewingFollowing: Boolean = false,
+
     val loading: Boolean = false,
     val error: String = "",
     val profileData: ProfileResponse? = null,
@@ -48,6 +51,27 @@ class ProfileViewModel(
 
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
+
+    fun setViewingFollowers(b: Boolean) {
+        _uiState.value = _uiState.value.copy(
+            viewingFollowers = b,
+        )
+        if (b) {
+            _uiState.value = _uiState.value.copy(
+                viewingFollowing = false,
+            )
+        }
+    }
+    fun setViewingFollowing(b: Boolean) {
+        _uiState.value = _uiState.value.copy(
+            viewingFollowing = b,
+        )
+        if (b) {
+            _uiState.value = _uiState.value.copy(
+                viewingFollowers = false,
+            )
+        }
+    }
 
     fun follow(username: String) {
         viewModelScope.launch {
@@ -95,7 +119,22 @@ class ProfileViewModel(
             try {
                 _uiState.value = _uiState.value.copy(error = "", loading = true)
 
-                val data = userRepository.getUserProfile(username);
+                var data = userRepository.getUserProfile(username);
+
+
+                println("profileData:\n"+
+                        "id: "+data.id.toString()+"\n"+
+                        "username: "+data.username+"\n"+
+                        "bio: "+data.bio+"\n"+
+                        "posts: "+data.posts+"\n"+
+                        "reviews: "+data.reviews+"\n"+
+                        "followers: "+data.followers+"\n"+
+                        "following: "+data.following+"\n"
+                )
+
+                if(data.bio==null) {
+                    data.bio = "No Bio"
+                }
 
                 _uiState.value = _uiState.value.copy(
                     profileData = data,
@@ -140,6 +179,8 @@ class ProfileViewModel(
             }
         }
     }
+
+
     fun fetchPosts(username: String, viewingReviews: Boolean = false) {
         viewModelScope.launch {
             try {

@@ -28,4 +28,8 @@ class UserRepository(private val api: UserApi) {
     suspend fun getFollowing(username: String): List<FollowResponse>{
         return api.getFollowing(username)
     }
+
+    suspend fun getFollowers(username: String): List<FollowResponse>{
+        return api.getFollowers(username)
+    }
 }

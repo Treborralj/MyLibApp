@@ -1,12 +1,12 @@
 package com.example.mylib.data.models
 
-class ProfileResponse (
+data class ProfileResponse (
     val id: Int,
-    val username: String,
-    val bio: String,
+    var username: String,
+    var bio: String,
     val profilePictureBase64: String,
-    val posts: List<PostResponse>,
-    val reviews: List<ReviewResponse>,
-    val followers: List<FollowResponse>,
-    val following: List<FollowResponse>
+    var posts: List<PostResponse>,
+    var reviews: List<ReviewResponse>,
+    var followers: List<FollowResponse>,
+    var following: List<FollowResponse>
 )

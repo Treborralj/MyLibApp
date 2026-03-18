@@ -1,9 +1,16 @@
 package com.example.mylib.ui.components
 
+import android.graphics.drawable.shapes.OvalShape
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -11,7 +18,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,34 +49,63 @@ fun PostFramePreview(
         score =3.5,
         bookId = 1
     ),
+    isReview:Boolean = true,
+
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(border=BorderStroke(
+                width = 3.dp,
+                color = Color(0xFF6650a4))),
     ) {
         Column(
-            modifier = Modifier.padding(5.dp),
+            modifier = Modifier.padding(0.dp),
             //verticalArrangement = Arrangement.SpaceBetween
            // verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth().padding(),
+                    .fillMaxWidth()
+                    .border(border=BorderStroke(
+                        width = 1.dp,
+                        color = Color(0xFF6650a4)))
+                    .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row() {
-                    Image(
-                        painter = painterResource(R.drawable.profile_pic_placeholder),
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier.size(width = 56.dp, height = 79.dp)
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                    ,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                        Image(
+                            painter = painterResource(R.drawable.profile_pic_placeholder),
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                // .size(width = 56.dp, height = 79.dp)
+                                .size(width = 70.dp, height = 80.dp)
+                                .background(
+                                    color = Color(0xFF6650a4),
+                                    shape = RectangleShape
+                                )
+                        )
+
+
+
                     Text(
+                        modifier = Modifier
+                            .weight(1f)
+                        ,
                         text = username,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Start
                     )
+
+
                 }
 
 
@@ -73,7 +117,15 @@ fun PostFramePreview(
                 )
             }
 
-        ReviewCardPreview(review, bookTitle)
+        when {
+            isReview -> {
+                ReviewCardPreview()
+            }
+            !isReview -> {
+                PostCardPreview()
+            }
+        }
+
 
 
         }
@@ -93,6 +145,7 @@ fun PostFrame(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(border=BorderStroke(width = 3.dp, color = Color(0xFF570DE0))),
     ) {
         Column(
             modifier = Modifier.padding(5.dp),

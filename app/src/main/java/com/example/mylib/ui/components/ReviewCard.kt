@@ -11,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,19 +53,28 @@ fun ReviewCardPreview(
 
                 review.score?.let { score ->
                     // Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        //modifier = Modifier.padding(vertical = 12.dp),
-                        text = "Score: $score",
-                        style = MaterialTheme.typography.bodySmall
 
+                    StarRating(
+                        starSize = 20,
+                        tint = Color(0xFF6650a4),
+                        rating = review.score.toFloat(),
+                        // onRatingChange = { userRating = it }
+                        onRatingChange = {a: Float -> println("placeholder function")}
                     )
                 }
             }
 
             review.text?.let { text ->
                 //Spacer(modifier = Modifier.height(4.dp))
-                Surface() {
+                Surface(
+                    modifier = Modifier
+                        .padding(0.dp)
+                    ,
+                ) {
                     Text(
+                        modifier = Modifier
+                            .padding(10.dp)
+                        ,
                         text = text,
                         style = MaterialTheme.typography.bodySmall
 

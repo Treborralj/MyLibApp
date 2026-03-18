@@ -32,4 +32,7 @@ interface UserApi {
     @GET("account/getFollowing/{username}")
     suspend fun getFollowing(@Path("username") username: String): List<FollowResponse>
 
+    @GET("account/getFollowers/{username}")
+    suspend fun getFollowers(@Path("username") username: String): List<FollowResponse>
+
 }
