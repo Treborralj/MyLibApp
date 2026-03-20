@@ -44,4 +44,9 @@ class PostRepository(
         postDao.deletePost(id)
         api.deletePost(id)
     }
+
+
+    suspend fun getPostbyId(id: Int): PostResponse {
+        return postDao.getPostbyId(id)
+    }
 }
