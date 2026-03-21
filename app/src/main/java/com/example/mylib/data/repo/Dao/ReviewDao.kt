@@ -20,4 +20,7 @@ interface ReviewDao {
 
     @Query("SELECT AVG(score) FROM Review WHERE bookId = :bookId")
     suspend fun getAverageScoreForBook(bookId: Int): Double?
+
+    @Query("SELECT * FROM Review WHERE id = :reviewId")
+    suspend fun observeReviewById(reviewId: Int): Review
 }
