@@ -58,7 +58,7 @@ fun AppNavigation(){
     val db = AppDatabase.getInstance(context)
     val navController = rememberNavController()
 
-    val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi)
+    val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi, db.bookListDao())
     val authenticationFactory = AuthenticationViewModelFactory(authenticationRepository)
     val authenticationViewModel: AuthenticationViewModel = viewModel(factory = authenticationFactory)
 
@@ -76,7 +76,7 @@ fun AppNavigation(){
 
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
     val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
-        val listRepository = ListRepository(RetrofitClient.listApi)
+        val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
         val listFactory = ListViewModelFactory(listRepository)
         val listViewModel: ListViewModel = viewModel(factory = listFactory)
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)

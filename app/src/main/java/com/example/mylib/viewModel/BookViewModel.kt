@@ -2,6 +2,7 @@ package com.example.mylib.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.MainActivity.Companion.loggedInUser
 import com.example.mylib.data.models.BookRequest
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.ReviewResponse
@@ -116,9 +117,9 @@ class BookViewModel(
                 val request = BookRequest(id = bookId)
 
                 when(listType){
-                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(request)
-                    ListType.AM_READING -> listRepository.addBookToAmReading(request)
-                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(request)
+                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(loggedInUser,request)
+                    ListType.AM_READING -> listRepository.addBookToAmReading(loggedInUser,request)
+                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(loggedInUser,request)
                 }
 
             } catch (e: Exception){
