@@ -24,6 +24,6 @@ interface PostDao {
     suspend fun observePostById(id: Int): Post
 
     @Query("SELECT * FROM Post WHERE accountId = :accountId")
-    suspend fun observePostsByAccountId(accountId: Int): Flow<List<Post>>
+    fun observePostsByAccountId(accountId: Int): Flow<List<Post>>
 
 }

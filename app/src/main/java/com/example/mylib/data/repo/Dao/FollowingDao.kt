@@ -18,7 +18,7 @@ interface FollowingDao {
     fun getFollowedUsers(username: String): Flow<List<Following>>
 
     @Query("SELECT * FROM Following WHERE followedUsername = :username")
-    fun getFollowingUsers(username: String): List<String>
+    fun getFollowingUsers(username: String): Flow<List<Following>>
     suspend fun clearAndInsert(username: String, followedUsers: List<String>) {
         followedUsers.forEach { followedUsername ->
             insert(Following(username, followedUsername))
