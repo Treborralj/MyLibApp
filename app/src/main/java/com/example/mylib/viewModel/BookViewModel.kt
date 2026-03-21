@@ -151,13 +151,3 @@ fun Book.toBookResponse(): BookResponse {
         score = score
     )
 }
-fun Book.toBookResponse(): BookResponse {
-    return BookResponse(
-        id = id,
-        name = name,
-        genre = genre,
-        isbn = isbn,
-        writer = writer,
-        score = score
-    )
-}
