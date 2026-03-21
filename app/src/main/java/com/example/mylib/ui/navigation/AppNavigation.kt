@@ -44,12 +44,12 @@ import com.example.mylib.viewModel.factory.ProfileViewModelFactory
 import com.example.mylib.viewModel.factory.ReviewEditorViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
 import com.example.mylib.viewModel.search.SearchViewModel
+import com.example.mylib.ui.screens.EditUserPage
+import com.example.mylib.data.repo.ListRepository
 
-    import com.example.mylib.data.repo.ListRepository
+import com.example.mylib.viewModel.Lists.ListViewModel
 
-    import com.example.mylib.viewModel.Lists.ListViewModel
-
-    import com.example.mylib.viewModel.factory.ListViewModelFactory
+import com.example.mylib.viewModel.factory.ListViewModelFactory
 
 
 @Composable
@@ -162,6 +162,9 @@ fun AppNavigation(){
                         ?: return@composable
                     ProfilePage(username = username,viewModel = profileViewModel, navController = navController)
                 }
+                composable(Routes.EditUser.route) {
+                    EditUserPage(navController = navController)
+                }
                 composable(Routes.Lists.route){
                     ListPage(
                         listViewModel = listViewModel
@@ -231,4 +234,7 @@ sealed class Routes(val route: String){
 
     data object PostEditor: Routes("postEditorPage")
     data object ReviewEditor: Routes("reviewEditorPage")
+
+    data object EditUser: Routes("editUserPage")
+
 }

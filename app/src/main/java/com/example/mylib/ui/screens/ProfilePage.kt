@@ -64,6 +64,15 @@ fun ProfilePage(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ){
+        if (username == MainActivity.loggedInUser) {
+            Button(
+                onClick = {
+                    navController.navigate(Routes.EditUser.route)
+                }
+            ) {
+                Text("Edit Profile")
+            }
+        }
         when {
             !uiState.viewingReviews -> {
                 Button(onClick = { viewModel.fetchReviews(username) }) {
