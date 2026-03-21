@@ -89,7 +89,25 @@ data class Book(
     val score: Double
 )
 
-@Entity
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = Book::class,
+            parentColumns = ["id"],
+            childColumns = ["bookId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = User::class,
+            parentColumns = ["name"],
+            childColumns = ["username"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["bookId", "username"], unique = true)
+    ]
+)
 data class Review(
     @PrimaryKey val id: Int,
     val bookId: Int,

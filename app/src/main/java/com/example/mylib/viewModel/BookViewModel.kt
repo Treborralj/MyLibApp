@@ -60,7 +60,6 @@ class BookViewModel(
     }
 
 
-
     fun loadReviews(bookId: Int) {
         viewModelScope.launch {
             reviewRepository.observeBookReviews(bookId)
@@ -141,6 +140,16 @@ fun Review.toReviewResponse(): ReviewResponse {
         time = time
     )
 
+}
+fun Book.toBookResponse(): BookResponse {
+    return BookResponse(
+        id = id,
+        name = name,
+        genre = genre,
+        isbn = isbn,
+        writer = writer,
+        score = score
+    )
 }
 fun Book.toBookResponse(): BookResponse {
     return BookResponse(
