@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 
 data class PostUiState(
     val loading: Boolean = false,
-    val error: String? = null,
+    val error: String = "",
     val result: PostResponse? = null
 )
 
@@ -28,11 +28,12 @@ class PostEditorViewModel(
     private val _uiState = MutableStateFlow(PostUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun editPost(text: String, id:Int?){
+    fun editPost(text: String, id:Int? = null){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
+                result = null,
                 loading = true,
-                error = null,
+                error = "",
             )
             var response: PostResponse? = null
             try{
@@ -59,7 +60,7 @@ class PostEditorViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 loading = true,
-                error = null,
+                error = "",
             )
             try{
 
@@ -73,7 +74,6 @@ class PostEditorViewModel(
                     loading = false,
                     error = e.message ?: "Couldn't delete post"
                 )
-                println("error deleting post: "+e)
             }
         }
     }

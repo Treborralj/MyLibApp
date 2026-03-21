@@ -126,7 +126,8 @@
                     BookPage(
                         bookId = bookId,
                         viewModel = bookViewModel,
-                        onAddReview = { }
+                        onAddReview = { },
+                        onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
                     )
                 }
                 composable(Routes.Signup.route){

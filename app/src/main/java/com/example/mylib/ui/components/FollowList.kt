@@ -3,6 +3,7 @@ package com.example.mylib.ui.components
 import android.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.unit.sp
@@ -58,7 +60,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 
-enum class followListType(val title: String) {
+enum class FollowListType(val title: String) {
     FOLLOWERS("Followers"),
     FOLLOWING("Following")
 }
@@ -67,19 +69,19 @@ enum class followListType(val title: String) {
 @Composable
 fun FollowList(
     viewModel: ProfileViewModel,
-    type: followListType,
+    type: String,
+    onClickUser: (username:String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState();
 
 
     var accounts: List<FollowResponse> = emptyList();
-    if (type == followListType.FOLLOWERS) {
+    if (FollowListType.valueOf(type).name == "FOLLOWERS") {
         accounts = uiState.profileData?.followers!!
     }
-    if (type == followListType.FOLLOWING) {
+    if (FollowListType.valueOf(type).name == "FOLLOWING") {
         accounts = uiState.profileData?.following!!
     }
-
 
 
     Card(
@@ -99,7 +101,7 @@ fun FollowList(
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(0.7f),
-                    text = type.title,
+                    text = FollowListType.valueOf(type).title,
                     style = MaterialTheme.typography.titleLarge,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
@@ -107,13 +109,12 @@ fun FollowList(
                 )
                 IconButton(
                     modifier = Modifier.fillMaxWidth(),
-                    //shape = RoundedCornerShape(35),
                     onClick = {
-                        if (type == followListType.FOLLOWERS) {
-                            viewModel.setViewingFollowers(false)
-                        } else {
-                            viewModel.setViewingFollowing(false)
-                        }
+                          if (FollowListType.valueOf(type).name == "FOLLOWERS") {
+                               viewModel.setViewingFollowers(false)
+                           } else {
+                               viewModel.setViewingFollowing(false)
+                           }
                     },
                     content = {
                         Icon(
@@ -143,9 +144,10 @@ fun FollowList(
                             .border(border=BorderStroke(
                                 width = 3.dp,
                                 color = Color(0xFF6650a4)))
-                            .padding(10.dp),
+                            .padding(10.dp)
+                            .clickable(onClick = { onClickUser(item.username) }),
                     ) {
-                        FollowListItem(item);
+                        FollowListItem(item)
                     }
 
                 }
@@ -164,7 +166,7 @@ fun FollowList(
 @Composable
 fun FollowListPreview(
     //viewModel: ProfileViewModel,
-    type: followListType = followListType.FOLLOWERS,
+    type: String = "FOLLOWERS",
     accounts: List<FollowResponse> = listOf(FollowResponse("Sample User 1"),FollowResponse("Sample User 2"),FollowResponse("Sample User 3"),
         FollowResponse("Sample User 4"),FollowResponse("Sample User 5")),
 ) {
@@ -187,7 +189,7 @@ fun FollowListPreview(
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(0.7f),
-                    text = type.title,
+                    text = FollowListType.valueOf(type).title,
                     style = MaterialTheme.typography.titleLarge,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
@@ -197,7 +199,11 @@ fun FollowListPreview(
                     modifier = Modifier.fillMaxWidth(),
                     //shape = RoundedCornerShape(35),
                     onClick = {
-
+                      //  if (type == followListType.FOLLOWERS) {
+                     //       viewModel.setViewingFollowers(false)
+                     //   } else {
+                     //       viewModel.setViewingFollowing(false)
+                     //   }
                     },
                     content = {
                         Icon(
@@ -231,7 +237,7 @@ fun FollowListPreview(
                     ) {
                         FollowListItemPreview();
                     }
-                    
+
                 }
             }
         }

@@ -34,6 +34,7 @@ import com.example.mylib.viewModel.HomefeedViewModel
 import com.example.mylib.viewModel.PostReviewItem
 import com.example.mylib.viewModel.ProfileViewModel
 import androidx.compose.ui.tooling.preview.Preview
+import kotlin.collections.set
 
 @Composable
 fun ProfilePosts(
@@ -42,25 +43,24 @@ fun ProfilePosts(
     username: String,
 )
 {
-    val uiState by viewModel.uiState.collectAsState();
+     val uiState by viewModel.uiState.collectAsState();
 
     val refreshPosts =
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.getStateFlow("refreshPosts", false)
+          navController.currentBackStackEntry
+             ?.savedStateHandle
+             ?.getStateFlow("refreshPosts", false)
             ?.collectAsState()
 
     LaunchedEffect(refreshPosts?.value) {
-        if (refreshPosts?.value == true) {
-            viewModel.fetchPosts(username)
-            navController.currentBackStackEntry?.savedStateHandle?.set("refreshPosts", false)
-        }
-    }
+         if (refreshPosts?.value == true) {
+             viewModel.fetchPosts(username)
+           navController.currentBackStackEntry?.savedStateHandle?.set("refreshPosts", false)
+      }
+     }
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Card(
         modifier = Modifier.fillMaxSize()
+
     ){
         when {
             !uiState.postsError.isEmpty() -> {
@@ -80,30 +80,39 @@ fun ProfilePosts(
 
             true -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxSize()
+                        .background(Color(0xFFFDF8F8)),
+                    verticalArrangement = Arrangement.spacedBy(30.dp)
                 ){
                     items(
                         items = uiState.posts
                     ) { item ->
 
-                        PostFrame(
-                            username,
-                            "Post Title",
-                            content = PostReviewItem.PostItem(item.post)
-                        )
 
-                        if (username == MainActivity.loggedInUser) {
-                            Button(onClick = {
+                        PostFrame(
+                            username = username,
+                            content = item,
+                            onEdit = {
                                 navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
                                 navController.navigate(Routes.PostEditor.route)
+                            },
+                            onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)}
+                        )
+                        /**
+                        if (username == MainActivity.loggedInUser) {
+                            Button(onClick = {
+                                 navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
+                                   navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
+                                  navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
+                                  navController.navigate(Routes.PostEditor.route)
                             }) {
                                 Text("Edit")
                             }
 
                         }
+                        */
 
 
                     }
@@ -182,9 +191,12 @@ fun ProfilePostsPreview(
 
                         )
 
-                        if (username == MainActivity.loggedInUser) {
+                        if (false) {
                             Button(onClick = {
-
+                               // navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
+                             //   navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
+                              //  navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
+                              //  navController.navigate(Routes.PostEditor.route)
                             }) {
                                 Text("Edit")
                             }

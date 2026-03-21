@@ -59,233 +59,185 @@ import com.example.mylib.R
 
 @Composable
 fun ProfileHeader(
-    modifier: Modifier,
     viewModel: ProfileViewModel,
 ) {
 
     // Observe state
-        val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
- //   Card (
- //       modifier = Modifier
-  //          .fillMaxWidth()
-  //          .height(IntrinsicSize.Min)
-  //          .padding(10.dp)
-  //          .background(color = Color(0xFFFFEB3B))
-   // ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth()
-                .height(intrinsicSize = IntrinsicSize.Min)
-                //.background(color = Color(0xFFFFEB3B))
-        ) {
-            when {
-                uiState.loading -> {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                       // horizontalArrangement = Arrangement.Center
-                    ){
-                        Text(
-                            text = "Loading..."
-                        )
-                       // CircularProgressIndicator(
-                         //   modifier = Modifier.fillMaxHeight(0.3f)
-                        //)
-                    }
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(intrinsicSize = IntrinsicSize.Min)
+    ) {
+
+        when {
+            uiState.loading || uiState.profileData == null -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
+            }
 
-                uiState.profileData == null -> {
-                    Surface() {
-                        Text(
-                            modifier = Modifier.padding().fillMaxWidth(1f),
-                            text = "Profile not found",
-                            style = MaterialTheme.typography.titleLarge,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-
+            !uiState.error.isEmpty()  -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        modifier = Modifier.padding().fillMaxWidth(1f),
+                        text = uiState.error,
+                        style = MaterialTheme.typography.bodyLarge,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
+            }
 
-                true -> {
-                    Column(
-                        modifier = Modifier.padding(15.dp)
-                            .background(Color(0xFF6650a4))
-                            .height(intrinsicSize = IntrinsicSize.Min)
-                        ,
-                        //verticalArrangement = Arrangement.SpaceBetween
-                        verticalArrangement = Arrangement.spacedBy(5.dp)
-
+            true -> {
+                Column(
+                    modifier = Modifier.padding(start=15.dp, end=15.dp)
+                        .wrapContentHeight(),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth().padding()
+                            .wrapContentHeight(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(0.dp),
                     ) {
-                        Row(
+
+                        Image(
+                            painter = painterResource(R.drawable.profile_pic_placeholder),
+                            contentDescription = "Profile Picture",
                             modifier = Modifier
-                                .fillMaxWidth().padding()
-                                .border(
-                                    border = BorderStroke(
-                                        width = 3.dp,
-                                        color = Color(0xFFF10606)
-                                    )
-                                )
-                            //  .weight(0.5f)
-                            ,
-                            horizontalArrangement = Arrangement.spacedBy(0.dp)
-                        ) {
+                                .fillMaxWidth(0.3f),
+                        )
 
-                            Image(
-                                painter = painterResource(R.drawable.profile_pic_placeholder),
-                                contentDescription = "Profile Picture",
-                                //modifier = Modifier.size(width = 100.dp, height = 120.dp)
-                                modifier = Modifier.fillMaxWidth(0.3f).fillMaxHeight(0.3f),
-                            )
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.3f),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    modifier = Modifier.padding().fillMaxWidth(1f),
-                                    text = uiState.profileData!!.username,
-                                    style = MaterialTheme.typography.titleLarge,
-                                    overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth().padding()
-                                .border(
-                                    border = BorderStroke(
-                                        width = 3.dp,
-                                        color = Color(0xFFF10606)
-                                    )
-                                )
-                            //   .weight(0.5f)
-                            ,
-                            horizontalArrangement = Arrangement.spacedBy(0.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-
-                            if (uiState.profileData!!.username != MainActivity.loggedInUser) {
-                                when {
-                                    !uiState.amFollowing -> {
-                                        Button(
-                                            modifier = Modifier.fillMaxWidth(0.3f),
-                                            shape = RoundedCornerShape(35),
-                                            onClick = {
-                                                viewModel.follow(uiState.profileData!!.username)
-                                            }) {
-                                            Text(
-                                                text = "Follow",
-                                                style = MaterialTheme.typography.labelMedium,
-                                                fontSize = 13.sp,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
-                                    }
-
-                                    uiState.amFollowing -> {
-                                        Button(
-                                            modifier = Modifier.fillMaxWidth(0.3f),
-                                            shape = RoundedCornerShape(35),
-                                            onClick = {
-                                                viewModel.unfollow(uiState.profileData!!.username)
-                                            }) {
-                                            Text(
-                                                text = "Unfollow",
-                                                style = MaterialTheme.typography.labelMedium,
-                                                fontSize = 13.sp,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
-                                    }
-                                }
-                            } else {
-                                Button(
-                                    modifier = Modifier.fillMaxWidth(0.3f),
-                                    shape = RoundedCornerShape(35),
-                                    onClick = {
-                                        //todo
-                                    }) {
-                                    Text(
-                                        text = "Edit\nProfile",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontSize = 13.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-
-
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth()
-                                ,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                TextButton(
-                                    shape = RoundedCornerShape(25),
-                                    onClick = {
-                                        viewModel.setViewingFollowers(true)
-                                    }) {
-                                    Text(
-                                        text = uiState.profileData!!.followers.size.toString() + "\nFollowers",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
-
-                                TextButton(
-                                    shape = RoundedCornerShape(25),
-                                    onClick = {
-                                        viewModel.setViewingFollowing(true)
-                                    }) {
-                                    Text(
-                                        text = uiState.profileData!!.following.size.toString() + "\nFollowing",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
-                            }
-
-
-                        }
-
-
-                        Surface(
-                            modifier = Modifier.padding(10.dp)
-                                .fillMaxWidth()
-                                .height(intrinsicSize = IntrinsicSize.Min)
-                                .border(
-                                    border = BorderStroke(
-                                        width = 3.dp,
-                                        color = Color(0xFFF10606)
-                                    )
-                                )
-                                .background(color = Color(0xFFF10606))
-                            // .defaultMinSize(minHeight = 0.dp)
-                            ,
-                            //contentAlignment = Alignment.Center
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = uiState.profileData!!.bio,
-                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding().fillMaxWidth(1f),
+                                text = uiState.profileData?.username ?: "",
+                                style = MaterialTheme.typography.titleLarge,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
                             )
                         }
+                    }
 
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(0.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+
+                        if (uiState.profileData!!.username != MainActivity.loggedInUser) {
+                            when {
+                                !uiState.amFollowing -> {
+                                    Button(
+                                        modifier = Modifier.fillMaxWidth(0.3f),
+                                        shape = RoundedCornerShape(35),
+                                        onClick = {
+                                            viewModel.follow(uiState.profileData!!.username)
+                                        }) {
+                                        Text(
+                                            text = "Follow",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+
+                                uiState.amFollowing -> {
+                                    Button(
+                                        modifier = Modifier.fillMaxWidth(0.3f),
+                                        shape = RoundedCornerShape(35),
+                                        onClick = {
+                                            viewModel.unfollow(uiState.profileData!!.username)
+                                        }) {
+                                        Text(
+                                            text = "Unfollow",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Button(
+                                modifier = Modifier.fillMaxWidth(0.3f),
+                                shape = RoundedCornerShape(35),
+                                onClick = {
+                                    //todo
+                                }) {
+                                Text(
+                                    text = "Edit\nProfile",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontSize = 13.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            TextButton(
+                                shape = RoundedCornerShape(25),
+                                onClick = {
+                                    viewModel.setViewingFollowers(true);
+                                }) {
+                                Text(
+                                    text = uiState.profileData!!.followers.size.toString() + "\nFollowers",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+
+                            TextButton(
+                                shape = RoundedCornerShape(25),
+                                onClick = {
+                                    viewModel.setViewingFollowing(true);
+                                }) {
+                                Text(
+                                    text = uiState.profileData!!.following.size.toString() + "\nFollowing",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .height(IntrinsicSize.Min)
+                            ,
+                            text = uiState.profileData!!.bio,
+                            style = MaterialTheme.typography.bodyMedium,
+                            //overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             }
+            }
         }
-
-
-
-
-   // }
 }
 
 
@@ -323,7 +275,7 @@ fun ProfileHeaderPreview(
            // .background(Color(0xFF22EC1C))
     ) {
         Column(
-            modifier = Modifier.padding(15.dp)
+            modifier = Modifier.padding(start=15.dp, end=15.dp)
                // .height(intrinsicSize = IntrinsicSize.Min)
                 .wrapContentHeight()
            //     .background(Color(0xFF1CDBEC))
@@ -387,7 +339,7 @@ fun ProfileHeaderPreview(
 
                     }) {
                     Text(
-                        text = "Follow",
+                        text = "Edit\nProfile",
                         style = MaterialTheme.typography.labelMedium,
                         fontSize = 13.sp,
                         textAlign = TextAlign.Center
@@ -428,10 +380,10 @@ fun ProfileHeaderPreview(
 
 
             Box(
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier
                  //   .wrapContentHeight()
                     .fillMaxWidth()
-                    .padding(top = 5.dp)
+                    .weight(1f)
                  //   .border(border=BorderStroke(width = 3.dp, color = Color(0xFFCD1CEC)))
                 ,
                 contentAlignment = Alignment.Center,
@@ -440,7 +392,7 @@ fun ProfileHeaderPreview(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
                     ,
-                    text = bio,
+                    text = shortbio,
                     style = MaterialTheme.typography.bodyMedium,
                     //overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,

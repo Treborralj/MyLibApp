@@ -73,20 +73,28 @@ fun ProfileReviews(
 
             true -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxSize().background(Color(0xFFFDF8F8)),
+                    verticalArrangement = Arrangement.spacedBy(30.dp)
                 ){
-                    items<PostReviewItem.ReviewItem>(
+                    items(
                         items = uiState.reviews
                     ) { item ->
-                        if (username == MainActivity.loggedInUser) {
                             Column(){
                                 PostFrame(
                                     username,
                                     "Book Title",
-                                    content = PostReviewItem.ReviewItem(item.review)
+                                    content = PostReviewItem.ReviewItem(item.review),
+                                    onEdit = {
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time)
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("reviewScore", item.review.score)
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookId", item.review.bookId)
+                                        navController.navigate(Routes.ReviewEditor.route)
+                                    },
+                                    onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
                                 )
-
+                                /**
                                 Button(onClick = {
                                     navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
                                     navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
@@ -97,15 +105,9 @@ fun ProfileReviews(
                                 }) {
                                     Text("Edit")
                                 }
+                                */
                             }
-                        }
-                        else {
-                            PostFrame(
-                                username,
-                                "Book Title",
-                                content = PostReviewItem.ReviewItem(item.review)
-                            )
-                        }
+
                     }
                 }
             }
@@ -180,24 +182,13 @@ fun ProfileReviewsPreview(
                     items<ReviewResponse>(
                         items = reviews
                     ) { item ->
-                        if (ownProfile) {
                             Column(){
                                 PostFramePreview(
 
                                 )
-
-                                Button(onClick = {
-
-                                }) {
-                                    Text("Edit")
-                                }
                             }
-                        }
-                        else {
-                            PostFramePreview(
 
-                            )
-                        }
+
                     }
                 }
             }

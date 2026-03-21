@@ -51,17 +51,12 @@ fun ReviewCardPreview(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                review.score?.let { score ->
-                    // Spacer(modifier = Modifier.height(4.dp))
-
-                    StarRating(
-                        starSize = 20,
-                        tint = Color(0xFF6650a4),
-                        rating = review.score.toFloat(),
-                        // onRatingChange = { userRating = it }
-                        onRatingChange = {a: Float -> println("placeholder function")}
-                    )
-                }
+                StarRating(
+                    starSize = 20,
+                    tint = Color(0xFF6650a4),
+                    rating = review.score.toFloat(),
+                    onRatingChange = {a: Float -> println("placeholder function")}
+                )
             }
 
             review.text?.let { text ->
@@ -90,7 +85,7 @@ fun ReviewCardPreview(
 @Composable
 fun ReviewCard(
     review: ReviewResponse,
-    bookTitle: String?
+    bookTitle: String = "Book Title"
 )
 {
     Card(
@@ -107,44 +102,32 @@ fun ReviewCard(
                     .fillMaxWidth().padding(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                if (bookTitle != null) {
-                    Text(
-                        text = bookTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                } else {
-                    Text(
-                        text = "Unnamed book",
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                Text(
+                    text = bookTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-                review.score?.let { score ->
-                    // Spacer(modifier = Modifier.height(4.dp))
-                    /**
-                    Text(
-                        //modifier = Modifier.padding(vertical = 12.dp),
-                        text = "Score: $score",
-                        style = MaterialTheme.typography.bodySmall
-
-                    )
-                    */
-                    StarRating(
-                        rating = review.score.toFloat(),
-                       // onRatingChange = { userRating = it }
-                        onRatingChange = {a: Float -> println("placeholder function")}
-                    )
-                }
+                StarRating(
+                    starSize = 20,
+                    tint = Color(0xFF6650a4),
+                    rating = review.score.toFloat(),
+                    onRatingChange = {a: Float -> println("placeholder function")}
+                )
             }
 
             review.text?.let { text ->
                 //Spacer(modifier = Modifier.height(4.dp))
-                Surface() {
+                Surface(
+                    modifier = Modifier
+                        .padding(0.dp)
+                    ,
+                ) {
                     Text(
+                        modifier = Modifier
+                            .padding(10.dp)
+                        ,
                         text = text,
                         style = MaterialTheme.typography.bodySmall
 

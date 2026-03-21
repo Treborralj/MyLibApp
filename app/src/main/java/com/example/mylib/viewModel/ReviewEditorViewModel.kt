@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 data class ReviewUiState(
     val loading: Boolean = false,
-    val error: String? = null,
+    val error: String = "",
     val result: ReviewResponse? = null
 )
 
@@ -22,11 +22,12 @@ class ReviewEditorViewModel(
     private val _uiState = MutableStateFlow(ReviewUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun editReview(text: String, id: Int?, score: Double, bookId: Int?){
+    fun editReview(text: String, id: Int? = null, score: Double, bookId: Int?){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 loading = true,
-                error = null,
+                error = "",
+                result = null,
             )
             var response: ReviewResponse? = null
             try{
@@ -60,7 +61,7 @@ class ReviewEditorViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 loading = true,
-                error = null,
+                error = "",
             )
             try{
 
@@ -69,6 +70,8 @@ class ReviewEditorViewModel(
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                 )
+
+
             } catch (e: Exception){
                 _uiState.value = _uiState.value.copy(
                     loading = false,

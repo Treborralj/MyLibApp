@@ -32,15 +32,16 @@ fun FollowListItem(
     account: FollowResponse,
     //onClick: () -> Unit
 ){
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(),
-        // .clickable{onClick()}
     ){
         Row(
-            modifier = Modifier.padding(vertical = 5.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.padding(vertical = 5.dp).
+            fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(20.dp,Alignment.Start)
         ){
 
             Box(
@@ -54,8 +55,6 @@ fun FollowListItem(
                     modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                 )
             }
-
-
             Box(
                 modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                 contentAlignment = Alignment.CenterStart
@@ -66,10 +65,6 @@ fun FollowListItem(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-
-
-
-
         }
     }
 }

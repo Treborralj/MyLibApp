@@ -117,14 +117,10 @@ fun PostCard(
                 Text(
                     text = postTitle,
                     style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Image(
-                    painter = painterResource(R.drawable.post_pic_placeholder),
-                    contentDescription = "Post Image",
-                    //modifier = Modifier.size(width = 112.dp, height = 158.dp)
+                    // maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
                 )
             }
 
@@ -132,12 +128,29 @@ fun PostCard(
                 //Spacer(modifier = Modifier.height(4.dp))
                 Surface() {
                     Text(
+                        modifier = Modifier.padding(10.dp),
                         text = text,
-                        style = MaterialTheme.typography.bodySmall
-
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight(0.4f)
+                    .fillMaxWidth()
+                //     .wrapContentSize(Alignment.Center)
+                ,
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    painter = painterResource(R.drawable.post_pic_placeholder),
+                    contentDescription = "Post Image",
+                    //modifier = Modifier.size(width = 112.dp, height = 158.dp)
+                )
+            }
+
 
         }
     }
