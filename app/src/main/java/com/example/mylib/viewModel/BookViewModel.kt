@@ -1,6 +1,5 @@
 package com.example.mylib.viewModel
 
-import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.data.models.BookRequest
@@ -84,17 +83,26 @@ class BookViewModel(
     fun createReview(bookId: Int, score: Float, text: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(error = null, loadingReviews = true)
+                _uiState.value = _uiState.value.copy(
+                    error = null,
+                    loadingReviews = true
+                )
+
                 reviewRepository.createReview(
                     text = text,
                     bookId = bookId,
                     score = score.toDouble()
                 )
-                fetchReviews(bookId)
+
+                reviewRepository.refreshBookReviews(bookId)
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
                     error = e.message ?: "Failed to create review"
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(
+                    loadingReviews = false
                 )
             }
         }
@@ -130,5 +138,16 @@ fun Review.toReviewResponse(): ReviewResponse {
         text = text,
         score = score,
         time = time
+    )
+
+}
+fun Book.toBookResponse(): BookResponse {
+    return BookResponse(
+        id = id,
+        name = name,
+        genre = genre,
+        isbn = isbn,
+        writer = writer,
+        score = score
     )
 }
