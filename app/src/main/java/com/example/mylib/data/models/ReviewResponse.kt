@@ -6,5 +6,6 @@ data class ReviewResponse(
     val time: String?,
     val score: Double,
     val bookId: Int,
+    val accountId: Int,
     val username: String? = null
 )

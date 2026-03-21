@@ -72,7 +72,12 @@ fun AppNavigation(){
 
 
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
-    val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
+    val reviewRepository = ReviewRepository(
+        RetrofitClient.reviewApi,
+        db.reviewDao(),
+        db.bookDao(),
+        db.userDao()
+    )
     val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository, listRepository)
     val listFactory = ListViewModelFactory(listRepository)
@@ -200,7 +205,9 @@ fun AppNavigation(){
                         text = text,
                         time = time,
                         score = score ?: 0.0,
-                        bookId = bookId
+                        bookId = bookId,
+                        username = null,
+                        accountId = 0
                     )
                 } else {
                     null

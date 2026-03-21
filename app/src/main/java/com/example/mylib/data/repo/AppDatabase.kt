@@ -29,7 +29,7 @@ import java.sql.Blob
         BookList::class,
         BookListCrossRef::class
                ],
-    version = 4
+    version = 6
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -99,18 +99,17 @@ data class Book(
         ),
         ForeignKey(
             entity = User::class,
-            parentColumns = ["name"],
-            childColumns = ["username"],
+            parentColumns = ["id"],
+            childColumns = ["accountId"],
             onDelete = ForeignKey.CASCADE
         )
-    ],
-    indices = [
-        Index(value = ["bookId", "username"], unique = true)
     ]
+
 )
 data class Review(
     @PrimaryKey val id: Int,
     val bookId: Int,
+    val accountId: Int,
     val username: String,
     val text: String?,
     val score: Double,

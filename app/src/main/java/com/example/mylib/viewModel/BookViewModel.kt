@@ -63,6 +63,8 @@ class BookViewModel(
         viewModelScope.launch {
             reviewRepository.observeBookReviews(bookId)
                 .collect { reviews ->
+                    println("UI RECEIVED ${reviews.size} reviews from DB")
+
                     _uiState.update {
                         it.copy(
                             reviews = reviews.map {
@@ -75,23 +77,41 @@ class BookViewModel(
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(loadingReviews = true) }
-            reviewRepository.refreshBookReviews(bookId)
+            _uiState.update { it.copy(loadingReviews = true, error = null) }
+            try {
+                reviewRepository.refreshBookReviews(bookId)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = e.message ?: "Failed to load reviews")
+                }
+            } finally {
+                _uiState.update { it.copy(loadingReviews = false) }
+            }
         }
     }
     fun createReview(bookId: Int, score: Float, text: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(error = null, loadingReviews = true)
+                _uiState.value = _uiState.value.copy(
+                    error = null,
+                    loadingReviews = true
+                )
+
                 reviewRepository.createReview(
                     text = text,
                     bookId = bookId,
                     score = score.toDouble()
                 )
+
+                reviewRepository.refreshBookReviews(bookId)
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
                     error = e.message ?: "Failed to create review"
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(
+                    loadingReviews = false
                 )
             }
         }
@@ -123,10 +143,12 @@ class BookViewModel(
 fun Review.toReviewResponse(): ReviewResponse {
     return ReviewResponse(
         id = id,
-        bookId = bookId,
         text = text,
+        time = time,
         score = score,
-        time = time
+        bookId = bookId,
+        accountId = accountId,
+        username = username
     )
 }
 fun Book.toBookResponse(): BookResponse {
