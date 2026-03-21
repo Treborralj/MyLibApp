@@ -21,4 +21,7 @@ interface UserApi {
     @GET("account/following")
     suspend fun getFollowing(): List<String>
 
+    @GET("account/followers")
+    suspend fun getFollowers(): List<String>
+
 }

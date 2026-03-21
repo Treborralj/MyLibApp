@@ -44,9 +44,12 @@ import com.example.mylib.viewModel.factory.ProfileViewModelFactory
 import com.example.mylib.viewModel.factory.ReviewEditorViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
 import com.example.mylib.viewModel.search.SearchViewModel
-import com.example.mylib.data.repo.ListRepository
-import com.example.mylib.viewModel.Lists.ListViewModel
-import com.example.mylib.viewModel.factory.ListViewModelFactory
+
+    import com.example.mylib.data.repo.ListRepository
+
+    import com.example.mylib.viewModel.Lists.ListViewModel
+
+    import com.example.mylib.viewModel.factory.ListViewModelFactory
 
 
 @Composable
@@ -55,7 +58,7 @@ fun AppNavigation(){
     val db = AppDatabase.getInstance(context)
     val navController = rememberNavController()
 
-    val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi)
+    val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi, db.bookListDao())
     val authenticationFactory = AuthenticationViewModelFactory(authenticationRepository)
     val authenticationViewModel: AuthenticationViewModel = viewModel(factory = authenticationFactory)
 
@@ -73,13 +76,11 @@ fun AppNavigation(){
 
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
     val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
-    val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
-    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository, listRepository)
-    val listFactory = ListViewModelFactory(listRepository)
-    val listViewModel: ListViewModel = viewModel(factory = listFactory)
+        val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
+        val listFactory = ListViewModelFactory(listRepository)
+        val listViewModel: ListViewModel = viewModel(factory = listFactory)
+    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
 
-
-    val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
 
     val postRepository = PostRepository(RetrofitClient.postApi, db.postDao())
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)

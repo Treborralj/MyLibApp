@@ -46,6 +46,10 @@ class FollowingRepository (
         return followingDao.getFollowedUsers(loggedinUser)
     }
 
+    fun observeFollowers(loggedinUser: String): Flow<List<Following>> {
+        return followingDao.getFollowingUsers(loggedinUser)
+    }
+
 
 
 

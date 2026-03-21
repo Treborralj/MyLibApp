@@ -2,6 +2,7 @@ package com.example.mylib.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.MainActivity.Companion.loggedInUser
 import com.example.mylib.data.models.BookRequest
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.ReviewResponse
@@ -82,16 +83,26 @@ class BookViewModel(
     fun createReview(bookId: Int, score: Float, text: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(error = null, loadingReviews = true)
+                _uiState.value = _uiState.value.copy(
+                    error = null,
+                    loadingReviews = true
+                )
+
                 reviewRepository.createReview(
                     text = text,
                     bookId = bookId,
                     score = score.toDouble()
                 )
+
+                reviewRepository.refreshBookReviews(bookId)
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
                     error = e.message ?: "Failed to create review"
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(
+                    loadingReviews = false
                 )
             }
         }
@@ -105,9 +116,9 @@ class BookViewModel(
                 val request = BookRequest(id = bookId)
 
                 when(listType){
-                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(0,request)
-                    ListType.AM_READING -> listRepository.addBookToAmReading(0,request)
-                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(0,request)
+                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(loggedInUser,request)
+                    ListType.AM_READING -> listRepository.addBookToAmReading(loggedInUser,request)
+                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(loggedInUser,request)
                 }
 
             } catch (e: Exception){
@@ -127,6 +138,17 @@ fun Review.toReviewResponse(): ReviewResponse {
         text = text,
         score = score,
         time = time
+    )
+
+}
+fun Book.toBookResponse(): BookResponse {
+    return BookResponse(
+        id = id,
+        name = name,
+        genre = genre,
+        isbn = isbn,
+        writer = writer,
+        score = score
     )
 }
 fun Book.toBookResponse(): BookResponse {

@@ -3,6 +3,7 @@ package com.example.mylib.viewModel.Lists
 import com.example.mylib.data.repo.ListRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.MainActivity.Companion.loggedInUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,9 +37,9 @@ class ListViewModel(private val repository: ListRepository): ViewModel(){
             _uiState.update { it.copy(isLoading = true, error = null) }
             try{
                 val books = when(listType){
-                    ListType.WANT_TO_READ -> repository.getWantToRead(0)
-                    ListType.AM_READING -> repository.getAmReading(0)
-                    ListType.HAVE_READ -> repository.getHaveRead(0)
+                    ListType.WANT_TO_READ -> repository.getWantToRead(loggedInUser)
+                    ListType.AM_READING -> repository.getAmReading(loggedInUser)
+                    ListType.HAVE_READ -> repository.getHaveRead(loggedInUser)
                 }
                 _uiState.update { state ->
                     when(listType){
@@ -76,9 +77,9 @@ class ListViewModel(private val repository: ListRepository): ViewModel(){
             }
             try {
                 when(listType){
-                    ListType.WANT_TO_READ -> repository.removeBookFromWantToRead(0,bookId)
-                    ListType.AM_READING -> repository.removeBookFromAmReading(0,bookId)
-                    ListType.HAVE_READ -> repository.removeBookFromHaveRead(0,bookId)
+                    ListType.WANT_TO_READ -> repository.removeBookFromWantToRead(loggedInUser, bookId)
+                    ListType.AM_READING -> repository.removeBookFromAmReading(loggedInUser, bookId)
+                    ListType.HAVE_READ -> repository.removeBookFromHaveRead(loggedInUser, bookId)
                 }
             }catch(e: Exception){
                 _uiState.value = beforeState.copy(

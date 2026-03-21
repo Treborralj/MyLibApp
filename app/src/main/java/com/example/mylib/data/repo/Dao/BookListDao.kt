@@ -10,11 +10,11 @@ import com.example.mylib.data.repo.BookList
 @Dao
 interface BookListDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE) // need to connect to login and account creation
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(bookList: BookList)
 
-    @Query("SELECT listId FROM BookList WHERE accountId = :userId AND type = :name")
-    suspend fun getBookListId(userId: Int, name: String): Int
+    @Query("SELECT listId FROM BookList WHERE owner = :user AND type = :name")
+    suspend fun getBookListId(user: String, name: String): Int
 
     @Delete
     suspend fun delete(bookList: BookList)
