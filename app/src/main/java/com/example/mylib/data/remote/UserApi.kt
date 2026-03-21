@@ -1,5 +1,6 @@
 package com.example.mylib.data.remote
 
+import com.example.mylib.data.models.ImageResponse
 import com.example.mylib.data.models.PostResponse
 import com.example.mylib.data.models.UserResponse
 import retrofit2.http.Body
@@ -23,5 +24,9 @@ interface UserApi {
 
     @GET("account/followers")
     suspend fun getFollowers(): List<String>
+
+    @GET("account/photo/{name}")
+    suspend fun fetchPhoto(@Path("name") name: String): ImageResponse
+
 
 }

@@ -24,8 +24,7 @@ class PostRepository(
                 accountId = 0,
                 text = response.text,
                 time = response.time,
-                //image = null,
-                imageType = null
+                imagePath = null
             )
         )
         return response
