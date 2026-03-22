@@ -1,9 +1,12 @@
 package com.example.mylib.data.repo
 
+import com.example.mylib.data.models.FollowRequest
+import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.data.models.PostResponse
 import com.example.mylib.data.models.UpdateAccountRequest
 import com.example.mylib.data.models.UpdateAccountResponse
 import com.example.mylib.data.models.UpdatePasswordRequest
+import com.example.mylib.data.models.ProfileResponse
 import com.example.mylib.data.remote.UserApi
 import com.example.mylib.data.repo.Dao.PostDao
 
@@ -37,5 +40,25 @@ class UserRepository(
                 confirmPassword = confirmPassword
             )
         )
+    }
+
+    suspend fun getUserProfile(username: String): ProfileResponse {
+        return api.getUserProfile(username)
+    }
+
+    suspend fun followAccount(account: FollowRequest) {
+        api.followAccount(account)
+    }
+
+    suspend fun unfollowAccount(account: FollowRequest) {
+        api.unfollowAccount(account)
+    }
+
+    suspend fun getFollowing(username: String): List<FollowResponse> {
+        return api.getFollowing(username)
+    }
+
+    suspend fun getFollowers(username: String): List<FollowResponse> {
+        return api.getFollowers(username)
     }
 }

@@ -1,7 +1,7 @@
 package com.example.mylib.data.models
 
-data class ReviewRequest(
-    val reviewId: Int,
+class ReviewCreateRequest (
+    val bookId: Int,
     val text: String,
     val score: Double
-)
+    )

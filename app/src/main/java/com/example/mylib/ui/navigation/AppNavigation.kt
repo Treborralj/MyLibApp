@@ -83,7 +83,7 @@ fun AppNavigation(){
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
 
 
-    val postRepository = PostRepository(RetrofitClient.postApi, db.postDao())
+    val postRepository = PostRepository(RetrofitClient.postApi)
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 
@@ -134,21 +134,23 @@ fun AppNavigation(){
                     ?.toIntOrNull()
                     ?: return@composable
 
-                val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
-                BookPage(
-                    bookId = bookId,
-                    viewModel = bookViewModel,
-                    onAddReview = { }
-                )
-            }
-            composable(Routes.Signup.route){
-                SignupPage(
-                    viewModel = authenticationViewModel,
-                    navController = navController
-                )
-            }
-            composable(Routes.Home.route){
-                HomeFeedPage(navController,homeFeedViewModel)
+                    val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
+
+                    BookPage(
+                        bookId = bookId,
+                        viewModel = bookViewModel,
+                        onAddReview = { },
+                        onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
+                    )
+                }
+                composable(Routes.Signup.route){
+                    SignupPage(
+                        viewModel = authenticationViewModel,
+                        navController = navController
+                    )
+                }
+                composable(Routes.Home.route){
+                    HomeFeedPage(navController,homeFeedViewModel)
 
                 }
                 composable(Routes.Search.route){
@@ -193,10 +195,9 @@ fun AppNavigation(){
                 }
 
             composable(Routes.PostEditor.route) {
-                val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("postId")
-                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText")
-                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime")
-
+                val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("postId") ?: 0
+                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText") ?: ""
+                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime") ?: ""
 
                 val post = PostResponse(
                     id = id,
@@ -214,17 +215,17 @@ fun AppNavigation(){
             composable(Routes.ReviewEditor.route) {
 
                 val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewId")
-                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewText")
-                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime")
-                val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore")
-                val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId")
+                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewText") ?: ""
+                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime") ?: ""
+                val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore") ?: 0.0
+                val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId") ?: 0
 
-                val review: ReviewResponse? = if (id != null && bookId != null) {
+                val review: ReviewResponse? = if (id != null) {
                     ReviewResponse(
                         id = id,
                         text = text,
                         time = time,
-                        score = score ?: 0.0,
+                        score = score,
                         bookId = bookId
                     )
                 } else {

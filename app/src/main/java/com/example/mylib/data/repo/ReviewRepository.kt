@@ -1,12 +1,12 @@
 package com.example.mylib.data.repo
 
-import com.example.mylib.data.models.ReviewRequest
+import com.example.mylib.data.models.ReviewCreateRequest
 import com.example.mylib.data.models.ReviewResponse
+import com.example.mylib.data.models.ReviewUpdateRequest
 import com.example.mylib.data.remote.ReviewApi
 import com.example.mylib.data.repo.Dao.BookDao
 import com.example.mylib.data.repo.Dao.ReviewDao
 import kotlinx.coroutines.flow.Flow
-
 
 class ReviewRepository(
     private val api: ReviewApi,
@@ -48,10 +48,10 @@ class ReviewRepository(
 
     suspend fun createReview(text: String?, bookId: Int, score: Double): ReviewResponse {
         val response = api.createReview(
-            hashMapOf(
-                "text" to (text ?: ""),
-                "bookId" to bookId,
-                "score" to score
+            ReviewCreateRequest(
+                text = text ?: "",
+                bookId = bookId,
+                score = score
             )
         )
 
@@ -69,7 +69,14 @@ class ReviewRepository(
     }
 
     suspend fun editReview(text: String, id: Int, score: Double): ReviewResponse {
-        val response = api.editReview(ReviewRequest(id, text, score))
+        val response = api.editReview(
+            ReviewUpdateRequest(
+                reviewId = id,
+                text = text,
+                score = score
+            )
+        )
+
         reviewDao.insertReview(
             Review(
                 id = response.id,
@@ -85,6 +92,5 @@ class ReviewRepository(
 
     suspend fun deleteReview(id: Int) {
         api.deleteReview(id)
-
     }
 }
