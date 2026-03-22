@@ -293,8 +293,8 @@ fun ProfilePage(
                                         if (uiState.profileData!!.username == MainActivity.loggedInUser) {
                                             IconButton(
                                                 onClick = {
-                                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", null)
-                                                    navController.navigate(Routes.ReviewEditor.route)
+                                                    navController.currentBackStackEntry?.savedStateHandle?.set("postId", null)
+                                                    navController.navigate(Routes.PostEditor.route)
                                                 },
                                                 content = {
                                                     Icon(

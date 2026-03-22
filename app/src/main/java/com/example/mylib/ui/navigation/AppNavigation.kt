@@ -159,7 +159,9 @@ fun AppNavigation(){
                         onBookClick = { book ->
                             navController.navigate("bookPage/${book.id}")
                         },
-                        onUserClick = { }
+                        onUserClick = { u ->
+                            navController.navigate(Routes.Profile.route + "/" + u)
+                        }
                     )
                 }
                 composable(Routes.Profile.route + "/{username}"){ backStackEntry ->
