@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 data class EditUserUiState(
     val isLoading: Boolean = false,
@@ -78,6 +79,24 @@ class EditUserViewModel(
             } catch (e: Exception) {
                 _uiState.value = EditUserUiState(
                     errorMessage = e.message ?: "Failed to update password"
+                )
+            }
+        }
+    }
+
+    fun updateProfilePicture(file: File) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = EditUserUiState(isLoading = true)
+
+                userRepository.updateProfilePicture(file)
+
+                _uiState.value = EditUserUiState(
+                    successMessage = "Profile picture updated successfully."
+                )
+            } catch (e: Exception) {
+                _uiState.value = EditUserUiState(
+                    errorMessage = e.message ?: "Failed to update profile picture"
                 )
             }
         }

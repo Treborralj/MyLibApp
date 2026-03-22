@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.LocalDateTime
 
 data class ProfileUiState(
@@ -233,5 +234,23 @@ class ProfileViewModel(
             }
         }
     }
+    fun updateProfilePicture(file: File) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(
+                    loading = true,
+                    error = ""
+                )
 
+                userRepository.updateProfilePicture(file)
+
+                fetchProfile(MainActivity.loggedInUser)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    loading = false,
+                    error = e.message ?: "Failed to update profile picture"
+                )
+            }
+        }
+    }
 }

@@ -3,12 +3,17 @@ package com.example.mylib.data.repo
 import com.example.mylib.data.models.FollowRequest
 import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.data.models.PostResponse
+import com.example.mylib.data.models.ProfilePictureResponse
 import com.example.mylib.data.models.UpdateAccountRequest
 import com.example.mylib.data.models.UpdateAccountResponse
 import com.example.mylib.data.models.UpdatePasswordRequest
 import com.example.mylib.data.models.ProfileResponse
 import com.example.mylib.data.remote.UserApi
 import com.example.mylib.data.repo.Dao.PostDao
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
 class UserRepository(
     private val api: UserApi,
@@ -60,5 +65,18 @@ class UserRepository(
 
     suspend fun getFollowers(username: String): List<FollowResponse> {
         return api.getFollowers(username)
+    }
+    suspend fun getProfilePicture(username: String): ProfilePictureResponse {
+        return api.getProfilePicture(username)
+    }
+
+    suspend fun updateProfilePicture(file: File): ProfilePictureResponse {
+        val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+        val filePart = MultipartBody.Part.createFormData(
+            "file",
+            file.name,
+            requestBody
+        )
+        return api.updateProfilePicture(filePart)
     }
 }

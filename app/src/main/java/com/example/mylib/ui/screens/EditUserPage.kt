@@ -1,5 +1,8 @@
 package com.example.mylib.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,9 +26,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mylib.ui.navigation.Routes
+import com.example.mylib.ui.util.uriToFile
 import com.example.mylib.viewModel.EditUserViewModel
 import com.example.mylib.viewModel.authentication.AuthenticationViewModel
 
@@ -39,12 +44,20 @@ fun EditUserPage(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     var username by rememberSaveable(currentUsername) { mutableStateOf(currentUsername) }
     var bio by rememberSaveable(currentBio) { mutableStateOf(currentBio) }
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        selectedImageUri = uri
+    }
 
     LaunchedEffect(uiState.successMessage, uiState.requiresRelogin) {
         val message = uiState.successMessage ?: return@LaunchedEffect
@@ -107,6 +120,29 @@ fun EditUserPage(
                 }
             ) {
                 Text("Save Profile")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    imagePickerLauncher.launch("image/*")
+                }
+            ) {
+                Text("Choose Profile Picture")
+            }
+
+            selectedImageUri?.let {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = {
+                        val file = uriToFile(context, it)
+                        viewModel.updateProfilePicture(file)
+                    }
+                ) {
+                    Text("Upload Profile Picture")
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))

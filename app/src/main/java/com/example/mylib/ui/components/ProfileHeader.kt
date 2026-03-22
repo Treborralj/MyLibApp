@@ -32,7 +32,12 @@ import com.example.mylib.MainActivity
 import com.example.mylib.R
 import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.viewModel.ProfileViewModel
-
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
+import com.example.mylib.ui.util.base64ToImageBitmap
 @Composable
 fun ProfileHeader(
     viewModel: ProfileViewModel,
@@ -46,7 +51,7 @@ fun ProfileHeader(
             .height(intrinsicSize = IntrinsicSize.Min)
     ) {
         when {
-            uiState.loading || uiState.profileData == null -> {
+            uiState.loading -> {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -73,6 +78,19 @@ fun ProfileHeader(
                 }
             }
 
+            uiState.profileData == null -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Profile not found",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
             else -> {
                 Column(
                     modifier = Modifier
@@ -88,11 +106,29 @@ fun ProfileHeader(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(0.dp),
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.profile_pic_placeholder),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier.fillMaxWidth(0.3f),
-                        )
+                        val profileBitmap = base64ToImageBitmap(uiState.profileData?.profilePictureBase64)
+
+                        if (profileBitmap != null) {
+                            Image(
+                                painter = BitmapPainter(profileBitmap),
+                                contentDescription = "Profile Picture",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.3f)
+                                    .aspectRatio(1f)
+                                    .clip(CircleShape),
+                            )
+                        } else {
+                            Image(
+                                painter = painterResource(R.drawable.profile_pic_placeholder),
+                                contentDescription = "Profile Picture",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.3f)
+                                    .aspectRatio(1f)
+                                    .clip(CircleShape),
+                            )
+                        }
 
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -202,7 +238,7 @@ fun ProfileHeader(
                     ) {
                         Text(
                             modifier = Modifier.height(IntrinsicSize.Min),
-                            text = uiState.profileData!!.bio,
+                            text = uiState.profileData!!.bio ?: "No Bio",
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                         )
