@@ -67,6 +67,14 @@ fun ProfilePage(
         if (username == MainActivity.loggedInUser) {
             Button(
                 onClick = {
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("editUsername", username)
+
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("editBio", "")
+
                     navController.navigate(Routes.EditUser.route)
                 }
             ) {

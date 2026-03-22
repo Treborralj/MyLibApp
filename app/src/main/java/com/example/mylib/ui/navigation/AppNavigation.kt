@@ -46,7 +46,8 @@ import com.example.mylib.viewModel.factory.SearchViewModelFactory
 import com.example.mylib.viewModel.search.SearchViewModel
 import com.example.mylib.ui.screens.EditUserPage
 import com.example.mylib.data.repo.ListRepository
-
+import com.example.mylib.viewModel.EditUserViewModel
+import com.example.mylib.viewModel.factory.EditUserViewModelFactory
 import com.example.mylib.viewModel.Lists.ListViewModel
 
 import com.example.mylib.viewModel.factory.ListViewModelFactory
@@ -89,6 +90,8 @@ fun AppNavigation(){
     val postEditorFactory = PostEditorViewModelFactory(postRepository)
     val reviewEditorFactory = ReviewEditorViewModelFactory(reviewRepository)
 
+    val editUserFactory = EditUserViewModelFactory(userRepository)
+
     val showBottomBar =
         currentRoute == Routes.Home.route ||
                 currentRoute == Routes.Search.route ||
@@ -96,6 +99,7 @@ fun AppNavigation(){
                 currentRoute == "bookPage/{bookId}" ||
                 currentRoute == Routes.ReviewEditor.route ||
                 currentRoute == Routes.PostEditor.route ||
+                currentRoute == Routes.EditUser.route ||
                 (currentRoute?.startsWith(Routes.Profile.route) == true)
 
     Scaffold(
@@ -163,7 +167,24 @@ fun AppNavigation(){
                     ProfilePage(username = username,viewModel = profileViewModel, navController = navController)
                 }
                 composable(Routes.EditUser.route) {
-                    EditUserPage(navController = navController)
+                    val editUserViewModel: EditUserViewModel = viewModel(factory = editUserFactory)
+
+                    val currentUsername =
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.get<String>("editUsername") ?: ""
+
+                    val currentBio =
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.get<String>("editBio") ?: ""
+
+                    EditUserPage(
+                        navController = navController,
+                        viewModel = editUserViewModel,
+                        currentUsername = currentUsername,
+                        currentBio = currentBio
+                    )
                 }
                 composable(Routes.Lists.route){
                     ListPage(

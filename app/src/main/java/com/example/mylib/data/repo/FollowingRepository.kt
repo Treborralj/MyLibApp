@@ -38,7 +38,7 @@ class FollowingRepository (
     }
 
     suspend fun refreshFollowing(loggedinUser: String){
-       val remoteFollowing = api.getFollowing()
+        val remoteFollowing = api.getFollowing(loggedinUser)
         followingDao.clearAndInsert(loggedinUser, remoteFollowing)
     }
 
