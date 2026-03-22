@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,16 +25,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.mylib.ui.navigation.Routes
 import com.example.mylib.viewModel.EditUserViewModel
+import com.example.mylib.viewModel.authentication.AuthenticationViewModel
 
 @Composable
 fun EditUserPage(
     navController: NavController,
     viewModel: EditUserViewModel,
+    authViewModel: AuthenticationViewModel,
     currentUsername: String,
     currentBio: String
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var username by rememberSaveable(currentUsername) { mutableStateOf(currentUsername) }
     var bio by rememberSaveable(currentBio) { mutableStateOf(currentBio) }
@@ -39,108 +46,134 @@ fun EditUserPage(
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    LaunchedEffect(uiState.successMessage) {
-        if (uiState.successMessage != null) {
+    LaunchedEffect(uiState.successMessage, uiState.requiresRelogin) {
+        val message = uiState.successMessage ?: return@LaunchedEffect
+
+        snackbarHostState.showSnackbar(message)
+
+        if (uiState.requiresRelogin) {
+            authViewModel.logout()
+            navController.navigate(Routes.Login.route) {
+                popUpTo(0)
+            }
+        } else {
             navController.popBackStack()
         }
+
+        viewModel.clearState()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Edit Profile",
-            style = MaterialTheme.typography.headlineMedium
-        )
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Edit Profile",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("New username") }
-        )
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("New username") }
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = bio,
-            onValueChange = { bio = it },
-            label = { Text("New bio") }
-        )
+            OutlinedTextField(
+                value = bio,
+                onValueChange = { bio = it },
+                label = { Text("New bio") }
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Button(
-            onClick = {
-                viewModel.updateAccount(
-                    username = username.takeIf { it.isNotBlank() },
-                    bio = bio.takeIf { it.isNotBlank() }
+            Button(
+                onClick = {
+                    viewModel.updateAccount(
+                        currentUsername = currentUsername,
+                        username = username,
+                        bio = bio
+                    )
+                }
+            ) {
+                Text("Save Profile")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedTextField(
+                value = oldPassword,
+                onValueChange = { oldPassword = it },
+                label = { Text("Old password") }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = newPassword,
+                onValueChange = { newPassword = it },
+                label = { Text("New password") }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirm new password") }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = {
+                    viewModel.updatePassword(oldPassword, newPassword, confirmPassword)
+                }
+            ) {
+                Text("Change Password")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (uiState.isLoading) {
+                Text("Saving...")
+            }
+
+            uiState.errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error
                 )
             }
-        ) {
-            Text("Save Profile")
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = oldPassword,
-            onValueChange = { oldPassword = it },
-            label = { Text("Old password") }
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = newPassword,
-            onValueChange = { newPassword = it },
-            label = { Text("New password") }
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Confirm new password") }
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = {
-                viewModel.updatePassword(oldPassword, newPassword, confirmPassword)
+            Button(
+                onClick = {
+                    authViewModel.logout()
+                    navController.navigate(Routes.Login.route) {
+                        popUpTo(0)
+                    }
+                }
+            ) {
+                Text("Log out")
             }
-        ) {
-            Text("Change Password")
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (uiState.isLoading) {
-            Text("Saving...")
-        }
-
-        uiState.errorMessage?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-
-        uiState.successMessage?.let {
-            Text(text = it)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Back")
+            Button(onClick = { navController.popBackStack() }) {
+                Text("Back")
+            }
         }
     }
 }

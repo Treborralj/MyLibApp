@@ -168,26 +168,27 @@ fun AppNavigation(){
                         ?: return@composable
                     ProfilePage(username = username,viewModel = profileViewModel, navController = navController)
                 }
-                composable(Routes.EditUser.route) {
-                    val editUserViewModel: EditUserViewModel = viewModel(factory = editUserFactory)
+            composable(Routes.EditUser.route) {
+                val editUserViewModel: EditUserViewModel = viewModel(factory = editUserFactory)
 
-                    val currentUsername =
-                        navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.get<String>("editUsername") ?: ""
+                val currentUsername =
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.get<String>("editUsername") ?: ""
 
-                    val currentBio =
-                        navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.get<String>("editBio") ?: ""
+                val currentBio =
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.get<String>("editBio") ?: ""
 
-                    EditUserPage(
-                        navController = navController,
-                        viewModel = editUserViewModel,
-                        currentUsername = currentUsername,
-                        currentBio = currentBio
-                    )
-                }
+                EditUserPage(
+                    navController = navController,
+                    viewModel = editUserViewModel,
+                    authViewModel = authenticationViewModel,
+                    currentUsername = currentUsername,
+                    currentBio = currentBio
+                )
+            }
                 composable(Routes.Lists.route){
                     ListPage(
                         listViewModel = listViewModel

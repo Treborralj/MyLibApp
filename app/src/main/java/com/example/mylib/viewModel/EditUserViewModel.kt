@@ -2,6 +2,7 @@ package com.example.mylib.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.MainActivity
 import com.example.mylib.data.repo.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +12,8 @@ import kotlinx.coroutines.launch
 data class EditUserUiState(
     val isLoading: Boolean = false,
     val successMessage: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val requiresRelogin: Boolean = false
 )
 
 class EditUserViewModel(
@@ -21,12 +23,35 @@ class EditUserViewModel(
     private val _uiState = MutableStateFlow(EditUserUiState())
     val uiState: StateFlow<EditUserUiState> = _uiState.asStateFlow()
 
-    fun updateAccount(username: String?, bio: String?) {
+    fun updateAccount(currentUsername: String, username: String?, bio: String?) {
         viewModelScope.launch {
             try {
                 _uiState.value = EditUserUiState(isLoading = true)
-                userRepository.updateAccount(username, bio)
-                _uiState.value = EditUserUiState(successMessage = "Profile updated successfully")
+
+                val trimmedUsername = username?.trim()
+                val trimmedBio = bio?.trim()
+
+                val usernameChanged =
+                    !trimmedUsername.isNullOrBlank() &&
+                            trimmedUsername != currentUsername.trim()
+
+                userRepository.updateAccount(
+                    username = trimmedUsername.takeIf { !it.isNullOrBlank() },
+                    bio = trimmedBio.takeIf { !it.isNullOrBlank() }
+                )
+
+                if (usernameChanged) {
+                    MainActivity.loggedInUser = trimmedUsername!!
+                }
+
+                _uiState.value = EditUserUiState(
+                    successMessage = if (usernameChanged) {
+                        "Username changed successfully. Please log in again."
+                    } else {
+                        "Profile updated successfully."
+                    },
+                    requiresRelogin = usernameChanged
+                )
             } catch (e: Exception) {
                 _uiState.value = EditUserUiState(
                     errorMessage = e.message ?: "Failed to update profile"
@@ -43,13 +68,22 @@ class EditUserViewModel(
         viewModelScope.launch {
             try {
                 _uiState.value = EditUserUiState(isLoading = true)
+
                 userRepository.updatePassword(oldPassword, newPassword, confirmPassword)
-                _uiState.value = EditUserUiState(successMessage = "Password updated successfully")
+
+                _uiState.value = EditUserUiState(
+                    successMessage = "Password updated successfully. Please log in again.",
+                    requiresRelogin = true
+                )
             } catch (e: Exception) {
                 _uiState.value = EditUserUiState(
                     errorMessage = e.message ?: "Failed to update password"
                 )
             }
         }
+    }
+
+    fun clearState() {
+        _uiState.value = EditUserUiState()
     }
 }

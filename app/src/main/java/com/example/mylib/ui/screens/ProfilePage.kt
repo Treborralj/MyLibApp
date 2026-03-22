@@ -184,8 +184,20 @@ fun ProfilePage(
                         .border(border=BorderStroke(width = 1.dp, color = Color(0xFF6650a4)))
                         .padding(10.dp),
                 ) {
-                    ProfileHeader(viewModel)
-                }
+                    ProfileHeader(
+                        viewModel = viewModel,
+                        onEditProfile = {
+                            navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("editUsername", username)
+
+                            navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("editBio", uiState.profileData?.bio ?: "")
+
+                            navController.navigate(Routes.EditUser.route)
+                        }
+                    )                }
 
                 when {
                     uiState.loading || uiState.profileData == null -> {
@@ -203,23 +215,6 @@ fun ProfilePage(
                             verticalArrangement = Arrangement.spacedBy(10.dp),
 
                             ) {
-                            if (username == MainActivity.loggedInUser) {
-                                Button(
-                                    onClick = {
-                                        navController.currentBackStackEntry
-                                            ?.savedStateHandle
-                                            ?.set("editUsername", username)
-
-                                        navController.currentBackStackEntry
-                                            ?.savedStateHandle
-                                            ?.set("editBio", "")
-
-                                        navController.navigate(Routes.EditUser.route)
-                                    }
-                                ) {
-                                    Text("Edit Profile")
-                                }
-                            }
                             when {
                                 !uiState.viewingReviews -> {
 
