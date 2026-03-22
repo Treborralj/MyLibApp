@@ -7,6 +7,7 @@ import com.example.mylib.data.models.ProfileResponse
 import com.example.mylib.data.models.UpdateAccountRequest
 import com.example.mylib.data.models.UpdateAccountResponse
 import com.example.mylib.data.models.UpdatePasswordRequest
+import com.example.mylib.data.models.UpdatePasswordResponse
 import com.example.mylib.data.models.UserResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -40,5 +41,5 @@ interface UserApi {
     suspend fun updateAccount(@Body request: UpdateAccountRequest): UpdateAccountResponse
 
     @PATCH("account/changePassword")
-    suspend fun updatePassword(@Body request: UpdatePasswordRequest): String
+    suspend fun updatePassword(@Body request: UpdatePasswordRequest): UpdatePasswordResponse
 }

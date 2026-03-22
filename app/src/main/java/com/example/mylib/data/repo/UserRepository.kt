@@ -39,7 +39,7 @@ class UserRepository(
                 newPassword = newPassword,
                 confirmPassword = confirmPassword
             )
-        )
+        ).message
     }
 
     suspend fun getUserProfile(username: String): ProfileResponse {
