@@ -42,7 +42,7 @@ import com.example.mylib.viewModel.search.SearchViewModel
 fun SearchPage(
     viewModel: SearchViewModel,
     onBookClick: (BookResponse) -> Unit,
-    onUserClick: (UserResponse) -> Unit
+    onUserClick: (username:String) -> Unit
 ){
     val uiState by viewModel.uiState.collectAsState()
 
@@ -123,7 +123,7 @@ fun SearchPage(
                     is SearchItem.UserItem -> {
                         UserListItem(
                             user = item.user,
-                            onClick = {onUserClick(item.user)}
+                            onClick = {onUserClick(item.user.username)}
                         )
                     }
 

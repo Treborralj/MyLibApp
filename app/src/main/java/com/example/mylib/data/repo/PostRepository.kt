@@ -1,6 +1,8 @@
 package com.example.mylib.data.repo
 
+import com.example.mylib.data.models.PostCreateRequest
 import com.example.mylib.data.models.PostResponse
+import com.example.mylib.data.models.PostUpdateRequest
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.remote.PostApi
 import com.example.mylib.data.remote.ReviewApi
@@ -15,16 +17,11 @@ class PostRepository(private val api: PostApi) {
         return api.getAccountPosts(username)
     }
     suspend fun createPost(text: String): PostResponse {
-        val hashMap = HashMap<String, Any>();
-        hashMap.put("text",text)
-        return api.createPost(hashMap)
+        return api.createPost(PostCreateRequest(text = text))
     }
 
     suspend fun editPost(text: String, id: Int): PostResponse {
-        val hashMap = HashMap<String, Any>();
-        hashMap.put("text",text)
-        hashMap.put("id",id)
-        return api.editPost(hashMap)
+        return api.editPost(PostUpdateRequest(id = id, text = text))
     }
 
     suspend fun deletePost(id: Int) {

@@ -1,16 +1,23 @@
 package com.example.mylib.viewModel
 
-import BookRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mylib.MainActivity.Companion.loggedInUser
+import com.example.mylib.data.models.BookRequest
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.models.UserResponse
+import com.example.mylib.data.repo.Book
+import com.example.mylib.data.repo.BookRepository
+import com.example.mylib.data.repo.Review
+import com.example.mylib.data.repo.ListRepository
 import com.example.mylib.data.repo.ReviewRepository
+import com.example.mylib.viewModel.Lists.ListType
 import com.example.mylib.viewModel.search.SearchItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class BookUiState(
@@ -19,90 +26,128 @@ data class BookUiState(
     val loading: Boolean = false,
     val loadingReviews: Boolean = false,
     val error: String? = null,
-    val reviews: List<PostReviewItem.ReviewItem> = emptyList()
+    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
 )
 
 
 class BookViewModel(
     private val repository: BookRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val listRepository: ListRepository,
 ) : ViewModel(){
 
     private val _uiState = MutableStateFlow(BookUiState())
-
     val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
 
-    fun fetchBook(bookId: Int) {
+    fun loadBook(bookId: Int) {
         viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(loading = true, error = null)
-
-                val book = repository.getBookById(bookId)
-                if (book == null) {
-                    _uiState.value = _uiState.value.copy(
-                        loading = false,
-                        error = "Book not found"
-                    )
-                    return@launch
+            repository.observeBook(bookId)
+                .collect { book ->
+                    _uiState.update {
+                        it.copy(
+                            book = book?.toBookResponse(), // map entity → UI model
+                            loading = false
+                        )
+                    }
                 }
+            repository.updateLocalBookScore(bookId)
+        }
 
-                _uiState.value = _uiState.value.copy(
-                    loading = false,
-                    book = book
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    loading = false,
-                    error = e.message ?: "Failed to load book"
-                )
-            }
+        viewModelScope.launch {
+            _uiState.update { it.copy(loading = true) }
+            repository.refreshBook(bookId)
         }
     }
 
 
-    fun fetchReviews(bookId: Int) {
+
+    fun loadReviews(bookId: Int) {
         viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(loadingReviews = true, error = null)
-
-                val reviews = reviewRepository.fetchBookReviews(bookId)
-                if (reviews.isEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        loadingReviews = false,
-                    )
-                    return@launch
+            reviewRepository.observeBookReviews(bookId)
+                .collect { reviews ->
+                    _uiState.update {
+                        it.copy(
+                            reviews = reviews.map {
+                                PostReviewItem.ReviewItem(it.toReviewResponse())
+                            },
+                            loadingReviews = false
+                        )
+                    }
                 }
+        }
 
-                _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                    reviews = reviews.map { PostReviewItem.ReviewItem(it) }
-                )
-            } catch (e: Exception) {
-                println("Failed to load reviews")
-                println("error: "+e.message)
-                _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                )
-            }
+        viewModelScope.launch {
+            _uiState.update { it.copy(loadingReviews = true) }
+            reviewRepository.refreshBookReviews(bookId)
         }
     }
     fun createReview(bookId: Int, score: Float, text: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(error = null, loadingReviews = true)
+                _uiState.value = _uiState.value.copy(
+                    error = null,
+                    loadingReviews = true
+                )
+
                 reviewRepository.createReview(
                     text = text,
                     bookId = bookId,
                     score = score.toDouble()
                 )
-                fetchReviews(bookId)
+
+                reviewRepository.refreshBookReviews(bookId)
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
                     error = e.message ?: "Failed to create review"
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(
+                    loadingReviews = false
                 )
             }
         }
     }
+
+    fun addBookToList(listType: ListType, bookId: Int){
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(error = null)
+
+                val request = BookRequest(id = bookId)
+
+                when(listType){
+                    ListType.WANT_TO_READ -> listRepository.addBookToWantToRead(loggedInUser,request)
+                    ListType.AM_READING -> listRepository.addBookToAmReading(loggedInUser,request)
+                    ListType.HAVE_READ -> listRepository.addBookToHaveRead(loggedInUser,request)
+                }
+
+            } catch (e: Exception){
+                _uiState.value = _uiState.value.copy(
+                    error = e.message
+                )
+            }
+        }
+
+    }
 }
 
+fun Review.toReviewResponse(): ReviewResponse {
+    return ReviewResponse(
+        id = id,
+        bookId = bookId,
+        text = text ?: "",
+        score = score,
+        time = time ?: ""
+    )
+}
+fun Book.toBookResponse(): BookResponse {
+    return BookResponse(
+        id = id,
+        name = name,
+        genre = genre,
+        isbn = isbn,
+        writer = writer,
+        score = score
+    )
+}

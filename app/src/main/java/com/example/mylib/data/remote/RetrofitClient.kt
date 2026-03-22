@@ -27,7 +27,9 @@ val client =  OkHttpClient.Builder()
 
 
 object RetrofitClient{
+
     private const val API_URL = "https://mylib-15dd.onrender.com/"
+    //private const val API_URL = "http://10.0.2.2:8080/"
 
     private val retrofit: Retrofit by lazy{
         Retrofit.Builder()
@@ -44,4 +46,6 @@ object RetrofitClient{
 
     val reviewApi: ReviewApi by lazy { retrofit.create(ReviewApi::class.java)}
     val postApi: PostApi by lazy {retrofit.create(PostApi::class.java)}
+    val listApi: ListApi by lazy {retrofit.create(ListApi::class.java)}
+
 }

@@ -1,41 +1,96 @@
 package com.example.mylib.data.repo
 
-import com.example.mylib.data.models.ReviewRequest
+import com.example.mylib.data.models.ReviewCreateRequest
 import com.example.mylib.data.models.ReviewResponse
+import com.example.mylib.data.models.ReviewUpdateRequest
 import com.example.mylib.data.remote.ReviewApi
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
+import com.example.mylib.data.repo.Dao.BookDao
+import com.example.mylib.data.repo.Dao.ReviewDao
+import kotlinx.coroutines.flow.Flow
 
-class ReviewRepository(private val api: ReviewApi) {
+class ReviewRepository(
+    private val api: ReviewApi,
+    private val reviewDao: ReviewDao,
+    private val bookDao: BookDao
+) {
 
-    suspend fun fetchUserReviews(username: String): List<ReviewResponse>{
-        return api.fetchUserReviews(username = username)
+    fun observeBookReviews(bookId: Int): Flow<List<Review>> {
+        return reviewDao.observeReviewsForBook(bookId)
     }
 
-    suspend fun fetchBookReviews(bookId: Int): List<ReviewResponse>{
-        return api.fetchBookReviews(bookId = bookId)
+    suspend fun refreshBookReviews(bookId: Int) {
+        val remoteReviews = api.fetchBookReviews(bookId)
+
+        reviewDao.insertReviews(
+            remoteReviews.map {
+                Review(
+                    id = it.id,
+                    bookId = bookId,
+                    username = it.username ?: "placeholder",
+                    text = it.text,
+                    score = it.score,
+                    time = it.time
+                )
+            }
+        )
+    }
+
+    suspend fun updateLocalBookScore(bookId: Int) {
+        val averageScore = reviewDao.getAverageScoreForBook(bookId)
+        if (averageScore != null) {
+            bookDao.updateBookScore(bookId, averageScore)
+        }
+    }
+
+    suspend fun fetchUserReviews(username: String): List<ReviewResponse> {
+        return api.fetchUserReviews(username)
     }
 
     suspend fun createReview(text: String?, bookId: Int, score: Double): ReviewResponse {
-       var txt: String = ""
-        if (text != null) {
-            txt = text
-        }
-        val hashMap = HashMap<String, Any>();
-        hashMap["text"] = txt
-        hashMap["bookId"] = bookId
-        hashMap["score"] = score
-        return api.createReview(hashMap)
+        val response = api.createReview(
+            ReviewCreateRequest(
+                text = text ?: "",
+                bookId = bookId,
+                score = score
+            )
+        )
+
+        reviewDao.insertReview(
+            Review(
+                id = response.id,
+                bookId = bookId,
+                username = response.username ?: "placeholder",
+                text = response.text,
+                score = response.score,
+                time = response.time
+            )
+        )
+        return response
     }
 
     suspend fun editReview(text: String, id: Int, score: Double): ReviewResponse {
-        val body = ReviewRequest(reviewId = id, text = text, score = score)
-        return api.editReview(body)
+        val response = api.editReview(
+            ReviewUpdateRequest(
+                reviewId = id,
+                text = text,
+                score = score
+            )
+        )
+
+        reviewDao.insertReview(
+            Review(
+                id = response.id,
+                bookId = response.bookId,
+                username = response.username ?: "placeholder",
+                text = response.text,
+                score = response.score,
+                time = response.time
+            )
+        )
+        return response
     }
 
     suspend fun deleteReview(id: Int) {
-        return api.deleteReview(id)
+        api.deleteReview(id)
     }
 }
-

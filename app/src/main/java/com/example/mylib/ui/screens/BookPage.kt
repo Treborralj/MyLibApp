@@ -32,19 +32,21 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
 import com.example.mylib.ui.components.PostFrame
 import com.example.mylib.ui.components.ReviewCreatorDialog
+import com.example.mylib.viewModel.Lists.ListType
 
 
 @Composable
 fun BookPage(
     bookId: Int,
     viewModel: BookViewModel,
-    onAddReview: () -> Unit
+    onAddReview: () -> Unit,
+    onClickUser: (username:String) -> Unit,
 ) {
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
     LaunchedEffect(bookId) {
-        viewModel.fetchBook(bookId)
-        viewModel.fetchReviews(bookId)
+        viewModel.loadBook(bookId)
+        viewModel.loadReviews(bookId)
     }
     when {
         uiState.loading -> {
@@ -128,18 +130,21 @@ fun BookPage(
                             text = { Text("Want to Read") },
                             onClick = {
                                 expanded = false
+                                viewModel.addBookToList(ListType.WANT_TO_READ, bookId)
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Currently Reading") },
+                            text = { Text("Am reading") },
                             onClick = {
                                 expanded = false
+                                viewModel.addBookToList(ListType.AM_READING, bookId)
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Read") },
+                            text = { Text("Have Read") },
                             onClick = {
                                 expanded = false
+                                viewModel.addBookToList(ListType.HAVE_READ, bookId)
                             }
                         )
                     }
@@ -177,7 +182,7 @@ fun BookPage(
                                 uiState.reviews,
                             ){ item ->
 
-                                PostFrame("Sample User", book.name, content = item)
+                                PostFrame("Sample User", book.name, content = item, onClickUser = onClickUser)
 
                             }
                         }
@@ -186,11 +191,6 @@ fun BookPage(
                         Text("This book has no reviews yet")
                     }
                 }
-
-
-
-
-
 
                 Spacer(modifier = Modifier.weight(0.8f))
 
