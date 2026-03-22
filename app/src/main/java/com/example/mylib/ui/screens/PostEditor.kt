@@ -127,6 +127,7 @@ fun PostEditor(
                     IconButton(
                         onClick = {
                             viewModel.deletePost(post!!.id)
+                            navController.popBackStack()
                         },
                         content = {
                             Icon(

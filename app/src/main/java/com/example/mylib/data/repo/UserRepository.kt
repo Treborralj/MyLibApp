@@ -1,5 +1,6 @@
 package com.example.mylib.data.repo
 
+import com.example.mylib.data.models.DeleteAccountRequest
 import com.example.mylib.data.models.FollowRequest
 import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.data.models.PostResponse
@@ -78,5 +79,9 @@ class UserRepository(
             requestBody
         )
         return api.updateProfilePicture(filePart)
+    }
+
+    suspend fun deleteAccount(password: String) {
+        api.deleteAccount(DeleteAccountRequest(password))
     }
 }

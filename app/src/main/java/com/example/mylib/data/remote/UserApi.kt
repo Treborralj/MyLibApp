@@ -1,5 +1,6 @@
 package com.example.mylib.data.remote
 
+import com.example.mylib.data.models.DeleteAccountRequest
 import com.example.mylib.data.models.FollowRequest
 import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.data.models.PostResponse
@@ -12,7 +13,9 @@ import com.example.mylib.data.models.UpdatePasswordResponse
 import com.example.mylib.data.models.UserResponse
 import okhttp3.MultipartBody
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.HTTP
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
@@ -57,4 +60,10 @@ interface UserApi {
     suspend fun updateProfilePicture(
         @Part file: MultipartBody.Part
     ): ProfilePictureResponse
+
+
+    @HTTP(method = "DELETE", path = "account/deleteAccount", hasBody = true)
+    suspend fun deleteAccount(
+        @Body request: DeleteAccountRequest
+    )
 }

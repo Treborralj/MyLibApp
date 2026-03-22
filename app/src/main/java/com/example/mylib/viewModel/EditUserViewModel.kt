@@ -14,7 +14,8 @@ data class EditUserUiState(
     val isLoading: Boolean = false,
     val successMessage: String? = null,
     val errorMessage: String? = null,
-    val requiresRelogin: Boolean = false
+    val requiresRelogin: Boolean = false,
+    val accountDeleted: Boolean = false
 )
 
 class EditUserViewModel(
@@ -101,8 +102,27 @@ class EditUserViewModel(
             }
         }
     }
+    fun deleteAccount(password: String) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = EditUserUiState(isLoading = true)
 
+                userRepository.deleteAccount(password)
+
+                _uiState.value = EditUserUiState(
+                    successMessage = "Account deleted successfully.",
+                    requiresRelogin = true,
+                    accountDeleted = true
+                )
+            } catch (e: Exception) {
+                _uiState.value = EditUserUiState(
+                    errorMessage = e.message ?: "Failed to delete account"
+                )
+            }
+        }
+    }
     fun clearState() {
         _uiState.value = EditUserUiState()
     }
+
 }

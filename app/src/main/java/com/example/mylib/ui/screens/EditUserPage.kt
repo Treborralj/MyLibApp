@@ -55,6 +55,7 @@ fun EditUserPage(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    var deletePassword by remember { mutableStateOf("") }
 
     var username by rememberSaveable(currentUsername) { mutableStateOf(currentUsername) }
     var bio by rememberSaveable(currentBio) { mutableStateOf(currentBio) }
@@ -62,7 +63,7 @@ fun EditUserPage(
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -268,6 +269,48 @@ fun EditUserPage(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Delete account",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+
+                    Text(
+                        text = "This action cannot be undone.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+
+                    OutlinedTextField(
+                        value = deletePassword,
+                        onValueChange = { deletePassword = it },
+                        label = { Text("Confirm password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            showDeleteDialog = true
+                        },
+                        enabled = deletePassword.isNotBlank() && !uiState.isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Delete account")
+                    }
+                }
+            }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -296,5 +339,34 @@ fun EditUserPage(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    if (showDeleteDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text("Delete account?")
+            },
+            text = {
+                Text("This action cannot be undone.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteAccount(deletePassword)
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
