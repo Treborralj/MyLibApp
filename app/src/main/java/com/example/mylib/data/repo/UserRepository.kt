@@ -18,7 +18,7 @@ class UserRepository(
     suspend fun fetchAndStorePhoto(name:String){
         val response = userApi.fetchPhoto(name)
 
-        val path = imageStorage.saveBase64Image(response.imageBase64, response.type, name)
+        val path = imageStorage.saveBase64Image(response.imageBase64, response.type, name) // error due to missing backend logic
         userDao.updateImage(name,path)
 
     }

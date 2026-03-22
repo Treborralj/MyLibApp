@@ -32,7 +32,7 @@ interface UserApi {
     @Multipart
     @POST("account/updateProfilePicture")
     suspend fun uploadPhoto(
-        @Part image: MultipartBody.Part
+        // TODO @Part image: MultipartBody.Part
     )
 
 
