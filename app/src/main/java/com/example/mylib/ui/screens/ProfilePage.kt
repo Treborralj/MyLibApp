@@ -1,35 +1,99 @@
 package com.example.mylib.ui.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.checkScrollableContainerConstraints
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.scrollableArea
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.modifier.modifierLocalOf
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHost
 import com.example.mylib.MainActivity
+import com.example.mylib.R
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.PostResponse
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.ui.components.PostFrame
+import com.example.mylib.ui.components.ProfileHeader
+import com.example.mylib.ui.components.ProfileHeaderPreview
+import com.example.mylib.ui.components.ProfilePosts
+import com.example.mylib.ui.components.ProfilePostsPreview
+import com.example.mylib.ui.components.ProfileReviews
+import com.example.mylib.ui.components.ProfileReviewsPreview
+import com.example.mylib.ui.components.ReviewCardPreview
 import com.example.mylib.ui.navigation.Routes
 import com.example.mylib.viewModel.BookViewModel
 import com.example.mylib.viewModel.HomefeedViewModel
 import com.example.mylib.viewModel.PostReviewItem
 import com.example.mylib.viewModel.ProfileViewModel
+import com.example.mylib.ui.components.FollowList
+import com.example.mylib.ui.components.FollowListPreview
 
 @Composable
 fun ProfilePage(
@@ -37,140 +101,477 @@ fun ProfilePage(
     navController: NavController,
     viewModel: ProfileViewModel,
 ){
-    // Observe state
+    //Observe state
     val uiState by viewModel.uiState.collectAsState()
-    val refreshReviews =
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.getStateFlow("refreshReviews", false)
-            ?.collectAsState()
-    LaunchedEffect(key1 = MainActivity.bearerToken) {
-        viewModel.fetchPosts(username)
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchProfile(username);
     }
-    LaunchedEffect(refreshReviews?.value) {
-        if (refreshReviews?.value == true) {
-            viewModel.fetchReviews(username)
-            navController.currentBackStackEntry?.savedStateHandle?.set("refreshReviews", false)
+
+    class CollapsingHeaderNestedScrollConnection(
+    ) : NestedScrollConnection {
+
+        var neutralPosition: Int by mutableIntStateOf(0)
+
+        var headerHeight: Int by mutableIntStateOf(0)
+
+        var headerOffset: Int by mutableIntStateOf(0)
+            private set
+
+        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+            val delta = available.y.toInt()
+            val newOffset = headerOffset + delta
+            val previousOffset = headerOffset
+            if (newOffset > previousOffset) {
+                return Offset(x=0f, y=0f)
+            }
+            headerOffset = newOffset.coerceIn(-headerHeight, neutralPosition)
+            val consumed = headerOffset - previousOffset
+            return Offset(0f, consumed.toFloat())
         }
-    }
-    LaunchedEffect(uiState.viewingReviews, username) {
-        if (uiState.viewingReviews) {
-            viewModel.fetchReviews(username)
+
+        override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+            val delta = available.y.toInt()
+            val newOffset = headerOffset + delta
+            val previousOffset = headerOffset
+            if (newOffset < previousOffset) {
+                return Offset(x=0f, y=0f)
+            }
+            headerOffset = newOffset.coerceIn(-headerHeight, neutralPosition)
+            val consumed = headerOffset - previousOffset
+            return Offset(0f, consumed.toFloat())
         }
     }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+    val headerConnection = remember() {
+        CollapsingHeaderNestedScrollConnection()
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .background(color = Color(0xFFFDF8F8))
     ){
+
+
         when {
-            !uiState.viewingReviews -> {
-                Button(onClick = { viewModel.fetchReviews(username) }) {
-                    Text("See Reviews")
-                }
-                Text(
-                    text = "Posts",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-
-                uiState.error?.let{ msg ->
-                    Text(
-                        text = msg,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    when {
-                        uiState.loadingPosts -> {
-                            Text("Loading posts...")
-                        }
-                        !uiState.posts.isEmpty() -> {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ){
-                                items<PostReviewItem.PostItem>(
-                                    items = uiState.posts
-                                ) { item ->
-                                    PostFrame(
-                                        username,
-                                        "Post Title",
-                                        content = PostReviewItem.PostItem(item.post)
-                                    )
-                                }
-                            }
-                        }
-                        uiState.posts.isEmpty() -> {
-                            Text("This account has no posts yet")
-                        }
+            uiState.viewingFollowers -> {
+                FollowList(viewModel,"FOLLOWERS",
+                    onClickUser = { u ->
+                        viewModel.setViewingFollowers(false);
+                    navController.navigate(Routes.Profile.route + "/" + u);
                     }
-                }
+                )
             }
 
-            uiState.viewingReviews -> {
-                Button(onClick = { viewModel.fetchPosts(username) }) {
-                    Text("See Posts")
-                }
-                Text(
-                    text = "Reviews",
-                    style = MaterialTheme.typography.headlineMedium
+            uiState.viewingFollowing -> {
+                FollowList(viewModel,"FOLLOWING",
+                    onClickUser = { u ->
+                        viewModel.setViewingFollowing(false);
+                        navController.navigate(Routes.Profile.route + "/" + u)
+                    }
                 )
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    when {
-                        uiState.loadingReviews -> {
-                            Text("Loading reviews...")
-                        }
-                        !uiState.reviews.isEmpty() -> {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ){
-                                items<PostReviewItem.ReviewItem>(
-                                    items = uiState.reviews
-                                ) { item ->
-                                    if (username == MainActivity.loggedInUser) {
-                                        Column(){
-                                            PostFrame(
-                                                username,
-                                                "Book Title",
-                                                content = PostReviewItem.ReviewItem(item.review)
-                                            )
+            }
 
-                                            Button(onClick = {
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewScore", item.review.score)
-                                                navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookId", item.review.bookId)
-                                                navController.navigate(Routes.ReviewEditor.route)
-                                            }) {
-                                                Text("Edit")
+            true -> {
+                Card (
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth()
+                        .onPlaced {
+                            headerConnection.headerHeight = it.size.height
+                        }
+                        .offset { IntOffset(0, headerConnection.headerOffset) }
+                        .border(border=BorderStroke(width = 1.dp, color = Color(0xFF6650a4)))
+                        .padding(10.dp),
+                ) {
+                    ProfileHeader(
+                        viewModel = viewModel,
+                        onEditProfile = {
+                            navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("editUsername", username)
+
+                            navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("editBio", uiState.profileData?.bio ?: "")
+
+                            navController.navigate(Routes.EditUser.route)
+                        }
+                    )                }
+
+                when {
+                    uiState.loading || uiState.profileData == null -> {
+
+                    }
+
+                    true -> {
+                        Column(
+                            modifier = Modifier
+                                .padding(top=10.dp,start=20.dp,end=20.dp)
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                                .offset { IntOffset(0, headerConnection.headerOffset + headerConnection.headerHeight) }
+                                .nestedScroll(headerConnection),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+
+                            ) {
+                            when {
+                                !uiState.viewingReviews -> {
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(vertical = 10.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        Row (
+                                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                                        ) {
+                                            OutlinedButton(
+                                                shape = RoundedCornerShape(35),
+                                                onClick = { viewModel.fetchPosts(username) }
+                                            ) {
+                                                Text("Posts")
+                                            }
+
+                                            ElevatedButton(
+                                                shape = RoundedCornerShape(35),
+                                                onClick = { viewModel.fetchReviews(username) }
+                                            ) {
+                                                Text("Reviews")
                                             }
                                         }
+
+                                        if (uiState.profileData!!.username == MainActivity.loggedInUser) {
+                                            IconButton(
+                                                onClick = {
+                                                    navController.currentBackStackEntry?.savedStateHandle?.set("postId", null)
+                                                    navController.navigate(Routes.PostEditor.route)
+                                                },
+                                                content = {
+                                                    Icon(
+                                                        modifier = Modifier.size(60.dp),
+                                                        imageVector = Icons.Filled.Add,
+                                                        contentDescription = "Add Post",
+                                                        tint = Color(0xFF6650a4),
+                                                    )
+                                                }
+                                            )
+                                        }
+
                                     }
-                                    else {
-                                        PostFrame(
-                                            username,
-                                            "Book Title",
-                                            content = PostReviewItem.ReviewItem(item.review)
-                                        )
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
+                                    ) {
+                                        ProfilePosts(viewModel,navController,username)
+                                    }
+                                }
+
+                                uiState.viewingReviews -> {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(vertical = 10.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        Row(horizontalArrangement = Arrangement.spacedBy(20.dp),) {
+                                            ElevatedButton(
+                                                shape = RoundedCornerShape(35),
+                                                onClick = { viewModel.fetchPosts(username) }
+                                            ) {
+                                                Text("Posts")
+                                            }
+
+                                            OutlinedButton(
+                                                shape = RoundedCornerShape(35),
+                                                onClick = { viewModel.fetchReviews(username) }
+                                            ) {
+                                                Text("Reviews")
+                                            }
+                                        }
+
+                                        if (uiState.profileData!!.username == MainActivity.loggedInUser) {
+                                            IconButton(
+                                                onClick = {
+                                                    navController.currentBackStackEntry?.savedStateHandle?.set("postId", null)
+                                                    navController.navigate(Routes.PostEditor.route)
+                                                },
+                                                content = {
+                                                    Icon(
+                                                        modifier = Modifier.size(60.dp),
+                                                        imageVector = Icons.Filled.Add,
+                                                        contentDescription = "Add Review",
+                                                        tint = Color(0xFF6650a4),
+                                                    )
+                                                }
+                                            )
+                                        }
+
+                                    }
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
+                                    ) {
+                                        ProfileReviews(viewModel,navController,username)
                                     }
                                 }
                             }
                         }
-                        uiState.reviews.isEmpty() -> {
-                            Text("This account has no reviews yet")
+                    }
+
+                }
+
+
+            }
+        }
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Preview
+@Composable
+fun ProfilePagePreview(
+    username: String = "Sample User",
+    //navController: NavController,
+    //viewModel: ProfileViewModel,
+    posts: List<PostResponse> = List(10,
+        {
+                PostResponse(it,text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                "10-10-25")
+            }),
+    reviews: List<ReviewResponse> = List(10,
+        {
+            ReviewResponse(it,text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                "10-10-25",3.5,it)
+        }),
+    viewingReviews:Boolean = false,
+    viewingFollowers: Boolean = false,
+    viewingFollowing: Boolean = false,
+    ownProfile: Boolean = true,
+){
+    // Observe state
+    //val uiState by viewModel.uiState.collectAsState()
+
+   // LaunchedEffect(key1 = MainActivity.bearerToken) {
+    //    viewModel.fetchProfile(username)
+        //viewModel.fetchPosts(username)
+        //viewModel.fetchReviews(username,false)
+   // }
+
+    class CollapsingHeaderNestedScrollConnection(
+    ) : NestedScrollConnection {
+
+        var neutralPosition: Int by mutableIntStateOf(0)
+
+        var headerHeight: Int by mutableIntStateOf(0)
+
+        var headerOffset: Int by mutableIntStateOf(0)
+            private set
+
+        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+            val delta = available.y.toInt()
+            val newOffset = headerOffset + delta
+            val previousOffset = headerOffset
+            if (newOffset > previousOffset) {
+                return Offset(x=0f, y=0f)
+            }
+            headerOffset = newOffset.coerceIn(-headerHeight, neutralPosition)
+            val consumed = headerOffset - previousOffset
+            return Offset(0f, consumed.toFloat())
+        }
+
+        override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+            val delta = available.y.toInt()
+            val newOffset = headerOffset + delta
+            val previousOffset = headerOffset
+            if (newOffset < previousOffset) {
+                return Offset(x=0f, y=0f)
+            }
+            headerOffset = newOffset.coerceIn(-headerHeight, neutralPosition)
+            val consumed = headerOffset - previousOffset
+            return Offset(0f, consumed.toFloat())
+        }
+    }
+
+    val headerConnection = remember() {
+        CollapsingHeaderNestedScrollConnection()
+    }
+
+    Box(
+           modifier = Modifier.fillMaxSize()
+               .background(color = Color(0xFFFDF8F8))
+    ){
+
+        when {
+            viewingFollowers -> {
+                FollowListPreview("FOLLOWERS")
+            }
+
+            viewingFollowing -> {
+                FollowListPreview( "FOLLOWING")
+            }
+
+            true -> {
+                Card (
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth()
+                        .onPlaced {
+                            headerConnection.headerHeight = it.size.height
+                        }
+                        .offset { IntOffset(0, headerConnection.headerOffset) }
+                        .border(border=BorderStroke(width = 1.dp, color = Color(0xFF6650a4)))
+                        .padding(10.dp),
+                ) {
+                    ProfileHeaderPreview()
+                }
+
+
+                Column(
+                    modifier = Modifier
+                        .padding(top=10.dp,start=20.dp,end=20.dp)
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .offset { IntOffset(0, headerConnection.headerOffset + headerConnection.headerHeight) }
+                        .nestedScroll(headerConnection),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+
+                    ) {
+                    when {
+                        !viewingReviews -> {
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Row (
+                                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                                ) {
+                                    OutlinedButton(
+                                        shape = RoundedCornerShape(35),
+                                        onClick = { }
+                                    ) {
+                                        Text("Posts")
+                                    }
+
+                                    ElevatedButton(
+                                        shape = RoundedCornerShape(35),
+                                        onClick = { }
+                                    ) {
+                                        Text("Reviews")
+                                    }
+                                }
+
+                                if (ownProfile) {
+                                    IconButton(
+                                        //modifier = Modifier.fillMaxWidth(),
+                                        //shape = RoundedCornerShape(35),
+                                        onClick = {
+                                            //  if (type == followListType.FOLLOWERS) {
+                                            //       viewModel.setViewingFollowers(false)
+                                            //   } else {
+                                            //       viewModel.setViewingFollowing(false)
+                                            //   }
+                                        },
+                                        content = {
+                                            Icon(
+                                                modifier = Modifier.size(60.dp),
+                                                imageVector = Icons.Filled.Add,
+                                                contentDescription = "Add Post",
+                                                tint = Color(0xFF6650a4),
+                                            )
+                                        }
+                                    )
+                                }
+
+                            }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight()
+                            ) {
+                                ProfilePostsPreview(username)
+                            }
+                        }
+
+                        viewingReviews -> {
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                                ) {
+                                    ElevatedButton(
+                                        shape = RoundedCornerShape(35),
+                                        onClick = { }
+                                    ) {
+                                        Text("Posts")
+                                    }
+
+                                    OutlinedButton(
+                                        shape = RoundedCornerShape(35),
+                                        onClick = { }
+                                    ) {
+                                        Text("Reviews")
+                                    }
+                                }
+
+                                if (ownProfile) {
+                                    IconButton(
+                                        //modifier = Modifier.fillMaxWidth(),
+                                        //shape = RoundedCornerShape(35),
+                                        onClick = {
+                                            //  if (type == followListType.FOLLOWERS) {
+                                            //       viewModel.setViewingFollowers(false)
+                                            //   } else {
+                                            //       viewModel.setViewingFollowing(false)
+                                            //   }
+                                        },
+                                        content = {
+                                            Icon(
+                                                modifier = Modifier.size(60.dp),
+                                                imageVector = Icons.Filled.Add,
+                                                contentDescription = "Add Review",
+                                                tint = Color(0xFF6650a4),
+                                            )
+                                        }
+                                    )
+                                }
+
+                            }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight()
+                            ) {
+                                ProfileReviewsPreview(username)
+                            }
                         }
                     }
                 }

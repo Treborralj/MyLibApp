@@ -135,11 +135,10 @@ fun Review.toReviewResponse(): ReviewResponse {
     return ReviewResponse(
         id = id,
         bookId = bookId,
-        text = text,
+        text = text ?: "",
         score = score,
-        time = time
+        time = time ?: ""
     )
-
 }
 fun Book.toBookResponse(): BookResponse {
     return BookResponse(
