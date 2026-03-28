@@ -103,7 +103,7 @@ data class Review(
 @Entity
 data class Post(
     @PrimaryKey val id: Int,
-     val accountId: Int,
+    val accountId: Int,
     val text: String?,
     val time: String?,
     //val image: Blob?,

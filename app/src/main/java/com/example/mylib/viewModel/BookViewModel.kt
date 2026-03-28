@@ -60,7 +60,6 @@ class BookViewModel(
     }
 
 
-
     fun loadReviews(bookId: Int) {
         viewModelScope.launch {
             reviewRepository.observeBookReviews(bookId)
