@@ -63,7 +63,12 @@ class AuthenticationViewModel(
             }
         }
     }
+    fun logout() {
+        MainActivity.bearerToken = ""
+        MainActivity.loggedInUser = ""
 
+        _uiState.value = AuthenticationUiState()
+    }
     fun clearSignupSuccess(){
         _uiState.value = _uiState.value.copy(signupSuccess = null)
     }

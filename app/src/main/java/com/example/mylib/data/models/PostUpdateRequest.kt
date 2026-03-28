@@ -1,6 +1,6 @@
 package com.example.mylib.data.models
 
-data class PostRequest (
-    val id: Int?,
+data class PostUpdateRequest (
+    val id: Int,
     val text: String?,
 )

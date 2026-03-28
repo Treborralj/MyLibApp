@@ -39,7 +39,8 @@ import com.example.mylib.viewModel.Lists.ListType
 fun BookPage(
     bookId: Int,
     viewModel: BookViewModel,
-    onAddReview: () -> Unit
+    onAddReview: () -> Unit,
+    onClickUser: (username:String) -> Unit,
 ) {
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
@@ -181,7 +182,7 @@ fun BookPage(
                                 uiState.reviews,
                             ){ item ->
 
-                                PostFrame("Sample User", book.name, content = item)
+                                PostFrame("Sample User", book.name, content = item, onClickUser = onClickUser)
 
                             }
                         }

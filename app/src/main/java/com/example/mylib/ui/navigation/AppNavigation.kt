@@ -44,12 +44,13 @@ import com.example.mylib.viewModel.factory.ProfileViewModelFactory
 import com.example.mylib.viewModel.factory.ReviewEditorViewModelFactory
 import com.example.mylib.viewModel.factory.SearchViewModelFactory
 import com.example.mylib.viewModel.search.SearchViewModel
+import com.example.mylib.ui.screens.EditUserPage
+import com.example.mylib.data.repo.ListRepository
+import com.example.mylib.viewModel.EditUserViewModel
+import com.example.mylib.viewModel.factory.EditUserViewModelFactory
+import com.example.mylib.viewModel.Lists.ListViewModel
 
-    import com.example.mylib.data.repo.ListRepository
-
-    import com.example.mylib.viewModel.Lists.ListViewModel
-
-    import com.example.mylib.viewModel.factory.ListViewModelFactory
+import com.example.mylib.viewModel.factory.ListViewModelFactory
 
 
 @Composable
@@ -82,12 +83,14 @@ fun AppNavigation(){
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
 
 
-    val postRepository = PostRepository(RetrofitClient.postApi, db.postDao())
+    val postRepository = PostRepository(RetrofitClient.postApi)
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 
     val postEditorFactory = PostEditorViewModelFactory(postRepository)
     val reviewEditorFactory = ReviewEditorViewModelFactory(reviewRepository)
+
+    val editUserFactory = EditUserViewModelFactory(userRepository)
 
     val showBottomBar =
         currentRoute == Routes.Home.route ||
@@ -96,6 +99,7 @@ fun AppNavigation(){
                 currentRoute == "bookPage/{bookId}" ||
                 currentRoute == Routes.ReviewEditor.route ||
                 currentRoute == Routes.PostEditor.route ||
+                currentRoute == Routes.EditUser.route ||
                 (currentRoute?.startsWith(Routes.Profile.route) == true)
 
     Scaffold(
@@ -130,21 +134,23 @@ fun AppNavigation(){
                     ?.toIntOrNull()
                     ?: return@composable
 
-                val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
-                BookPage(
-                    bookId = bookId,
-                    viewModel = bookViewModel,
-                    onAddReview = { }
-                )
-            }
-            composable(Routes.Signup.route){
-                SignupPage(
-                    viewModel = authenticationViewModel,
-                    navController = navController
-                )
-            }
-            composable(Routes.Home.route){
-                HomeFeedPage(navController,homeFeedViewModel)
+                    val bookViewModel: BookViewModel = viewModel(factory = bookViewModelFactory)
+
+                    BookPage(
+                        bookId = bookId,
+                        viewModel = bookViewModel,
+                        onAddReview = { },
+                        onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
+                    )
+                }
+                composable(Routes.Signup.route){
+                    SignupPage(
+                        viewModel = authenticationViewModel,
+                        navController = navController
+                    )
+                }
+                composable(Routes.Home.route){
+                    HomeFeedPage(navController,homeFeedViewModel)
 
                 }
                 composable(Routes.Search.route){
@@ -153,7 +159,9 @@ fun AppNavigation(){
                         onBookClick = { book ->
                             navController.navigate("bookPage/${book.id}")
                         },
-                        onUserClick = { }
+                        onUserClick = { u ->
+                            navController.navigate(Routes.Profile.route + "/" + u)
+                        }
                     )
                 }
                 composable(Routes.Profile.route + "/{username}"){ backStackEntry ->
@@ -162,6 +170,27 @@ fun AppNavigation(){
                         ?: return@composable
                     ProfilePage(username = username,viewModel = profileViewModel, navController = navController)
                 }
+            composable(Routes.EditUser.route) {
+                val editUserViewModel: EditUserViewModel = viewModel(factory = editUserFactory)
+
+                val currentUsername =
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.get<String>("editUsername") ?: ""
+
+                val currentBio =
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.get<String>("editBio") ?: ""
+
+                EditUserPage(
+                    navController = navController,
+                    viewModel = editUserViewModel,
+                    authViewModel = authenticationViewModel,
+                    currentUsername = currentUsername,
+                    currentBio = currentBio
+                )
+            }
                 composable(Routes.Lists.route){
                     ListPage(
                         listViewModel = listViewModel
@@ -169,10 +198,9 @@ fun AppNavigation(){
                 }
 
             composable(Routes.PostEditor.route) {
-                val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("postId")
-                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText")
-                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime")
-
+                val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("postId") ?: 0
+                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText") ?: ""
+                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime") ?: ""
 
                 val post = PostResponse(
                     id = id,
@@ -190,17 +218,17 @@ fun AppNavigation(){
             composable(Routes.ReviewEditor.route) {
 
                 val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewId")
-                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewText")
-                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime")
-                val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore")
-                val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId")
+                val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewText") ?: ""
+                val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime") ?: ""
+                val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore") ?: 0.0
+                val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId") ?: 0
 
-                val review: ReviewResponse? = if (id != null && bookId != null) {
+                val review: ReviewResponse? = if (id != null) {
                     ReviewResponse(
                         id = id,
                         text = text,
                         time = time,
-                        score = score ?: 0.0,
+                        score = score,
                         bookId = bookId
                     )
                 } else {
@@ -231,4 +259,7 @@ sealed class Routes(val route: String){
 
     data object PostEditor: Routes("postEditorPage")
     data object ReviewEditor: Routes("reviewEditorPage")
+
+    data object EditUser: Routes("editUserPage")
+
 }

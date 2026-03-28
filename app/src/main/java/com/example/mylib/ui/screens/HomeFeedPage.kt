@@ -3,6 +3,7 @@ package com.example.mylib.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mylib.MainActivity
 import com.example.mylib.ui.components.PostFrame
+import com.example.mylib.ui.navigation.Routes
 import com.example.mylib.viewModel.BookViewModel
 import com.example.mylib.viewModel.HomefeedViewModel
 import com.example.mylib.viewModel.PostReviewItem
@@ -33,7 +35,7 @@ fun HomeFeedPage(
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().padding(10.dp)
     ){
         when {
             uiState.loading -> {
@@ -42,13 +44,15 @@ fun HomeFeedPage(
             !uiState.posts.isEmpty() -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(30.dp)
                 ){
                     items(
                         uiState.posts,
                     ){ item ->
 
-                        PostFrame("Sample User", "post title", content = PostReviewItem.PostItem(item.post))
+                        PostFrame("Sample User", "post title", content = PostReviewItem.PostItem(item.post),
+                            onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
+                        )
 
                     }
                 }
