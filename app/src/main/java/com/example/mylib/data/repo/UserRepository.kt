@@ -10,6 +10,7 @@ import com.example.mylib.data.models.UpdateAccountResponse
 import com.example.mylib.data.models.UpdatePasswordRequest
 import com.example.mylib.data.models.ProfileResponse
 import com.example.mylib.data.remote.UserApi
+import com.example.mylib.data.repo.Dao.FollowingDao
 import com.example.mylib.data.repo.Dao.PostDao
 import com.example.mylib.data.repo.Dao.UserDao
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -19,6 +20,7 @@ import java.io.File
 
 class UserRepository(
     private val userApi: UserApi,
+    private val followingDao: FollowingDao,
     private val postDao: PostDao,
     private val userDao: UserDao,
     private val imageStorage: ImageStorageManager
@@ -27,16 +29,17 @@ class UserRepository(
         return userApi.fetchFeed()
     }
 
+    /*
     suspend fun fetchAndStorePhoto(name:String){
-        val response = userApi.fetchPhoto(name)
+        val response = userApi.getProfilePicture(name)
 
         val path = imageStorage.saveBase64Image(response.imageBase64, response.type, name) // error due to missing backend logic
         userDao.updateImage(name,path)
 
-    }
+    }*/
 
     suspend fun updateAccount(username: String?, bio: String?): UpdateAccountResponse {
-        return api.updateAccount(
+        return userApi.updateAccount(
             UpdateAccountRequest(
                 username = username,
                 bio = bio
@@ -49,7 +52,7 @@ class UserRepository(
         newPassword: String,
         confirmPassword: String
     ): String {
-        return api.updatePassword(
+        return userApi.updatePassword(
             UpdatePasswordRequest(
                 oldPassword = oldPassword,
                 newPassword = newPassword,
@@ -59,26 +62,64 @@ class UserRepository(
     }
 
     suspend fun getUserProfile(username: String): ProfileResponse {
-        return api.getUserProfile(username)
+        return userApi.getUserProfile(username)
     }
 
-    suspend fun followAccount(account: FollowRequest) {
-        api.followAccount(account)
+    suspend fun followAccount(loggedinUser: String, username: String) {
+        userApi.followAccount(FollowRequest(username))
+
+        followingDao.insert(
+            Following(
+                followingUsername = loggedinUser,
+                followedUsername = username
+            )
+        )
     }
 
-    suspend fun unfollowAccount(account: FollowRequest) {
-        api.unfollowAccount(account)
+    suspend fun unfollowAccount(loggedinUser: String, username: String) {
+        userApi.unfollowAccount(FollowRequest(username))
+
+        followingDao.delete(
+            Following(
+                followingUsername = loggedinUser,
+                followedUsername = username
+            )
+        )
     }
 
-    suspend fun getFollowing(username: String): List<FollowResponse> {
-        return api.getFollowing(username)
+    suspend fun getFollowers(loggedinUser: String): List<FollowResponse> {
+        val remoteFollowing = userApi.getFollowing(loggedinUser)
+
+        val followingEntities = remoteFollowing.map { followResponse ->
+            Following(
+                followingUsername = loggedinUser,
+                followedUsername = followResponse.username
+            )
+        }
+        followingDao.clearAndInsert(loggedinUser, followingEntities)
+
+        val localFollowing = followingDao.getFollowingUsers(loggedinUser)
+        return localFollowing.map { FollowResponse(it.followingUsername) }
     }
 
-    suspend fun getFollowers(username: String): List<FollowResponse> {
-        return api.getFollowers(username)
+    suspend fun getFollowing(loggedinUser: String): List<FollowResponse> {
+        val remoteFollowing = userApi.getFollowing(loggedinUser)
+
+        val followingEntities = remoteFollowing.map { followResponse ->
+            Following(
+                followingUsername = loggedinUser,
+                followedUsername = followResponse.username
+            )
+        }
+        followingDao.clearAndInsert(loggedinUser, followingEntities)
+
+        val localFollowing = followingDao.getFollowedUsers(loggedinUser)
+        return localFollowing.map { FollowResponse(it.followedUsername) }
     }
+
+
     suspend fun getProfilePicture(username: String): ProfilePictureResponse {
-        return api.getProfilePicture(username)
+        return userApi.getProfilePicture(username)
     }
 
     suspend fun updateProfilePicture(file: File): ProfilePictureResponse {
@@ -88,10 +129,10 @@ class UserRepository(
             file.name,
             requestBody
         )
-        return api.updateProfilePicture(filePart)
+        return userApi.updateProfilePicture(filePart)
     }
 
     suspend fun deleteAccount(password: String) {
-        api.deleteAccount(DeleteAccountRequest(password))
+        userApi.deleteAccount(DeleteAccountRequest(password))
     }
 }

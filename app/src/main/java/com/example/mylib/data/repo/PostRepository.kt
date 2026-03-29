@@ -17,9 +17,8 @@ class PostRepository(
     }
 
     suspend fun createPost(text: String): PostResponse {
-        val hashMap = HashMap<String, Any>()
-        hashMap["text"] = text
-        val response = api.createPost(hashMap)
+        val request = PostCreateRequest(text = text)
+        val response = api.createPost(request)
         
         postDao.insert(
             Post(
@@ -34,10 +33,8 @@ class PostRepository(
     }
 
     suspend fun editPost(text: String, id: Int): PostResponse {
-        val hashMap = HashMap<String, Any>()
-        hashMap["text"] = text
-        hashMap["id"] = id
-        val response = api.editPost(hashMap)
+        val request = PostUpdateRequest(id = id, text = text)
+        val response = api.editPost(request)
         postDao.updatePost(id, text)
         return response
     }
