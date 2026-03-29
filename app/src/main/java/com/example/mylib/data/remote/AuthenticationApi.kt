@@ -14,6 +14,6 @@ interface AuthenticationApi {
     @POST("account/signup")
     suspend fun signup(@Body req: SignupRequest): SignupResponse
 
-    @GET("account/me")
+    @GET("auth/me")
     suspend fun getLoggedIn(): Map<String, String>
 }
