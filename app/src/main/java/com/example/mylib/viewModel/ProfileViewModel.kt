@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.MainActivity
+import com.example.mylib.MainActivity.Companion.loggedInUser
 import com.example.mylib.data.models.FollowRequest
 import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.data.models.PostResponse
@@ -46,7 +47,8 @@ data class ProfileUiState(
 class ProfileViewModel(
     private val userRepository: UserRepository,
     private val postRepository: PostRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+
 ) : ViewModel(){
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -80,7 +82,7 @@ class ProfileViewModel(
             try {
                 _uiState.value = _uiState.value.copy(followError = "", loadingFollow = true)
 
-                userRepository.followAccount(FollowRequest(username))
+                userRepository.followAccount(loggedInUser,username)
 
                 _uiState.value = _uiState.value.copy(
                     loadingFollow = false,
@@ -100,7 +102,7 @@ class ProfileViewModel(
             try {
                 _uiState.value = _uiState.value.copy(followError = "", loadingFollow = true)
 
-                userRepository.unfollowAccount(FollowRequest(username))
+                userRepository.unfollowAccount(loggedInUser,username)
                 _uiState.value = _uiState.value.copy(
                     loadingFollow = false,
                     amFollowing = false,
@@ -121,6 +123,7 @@ class ProfileViewModel(
                 _uiState.value = _uiState.value.copy(error = "", loading = true)
 
                 var data = userRepository.getUserProfile(username);
+
 
 
                 println("profileData:\n"+

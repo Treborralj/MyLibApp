@@ -5,7 +5,6 @@ import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.IOException
 
 class ImageStorageManager(private val context: Context) {
 
