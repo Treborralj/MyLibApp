@@ -85,7 +85,7 @@ fun AppNavigation(){
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
 
 
-    val postRepository = PostRepository(RetrofitClient.postApi)
+    val postRepository = PostRepository(RetrofitClient.postApi,db.postDao())
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 

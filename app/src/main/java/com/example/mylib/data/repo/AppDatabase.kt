@@ -29,7 +29,7 @@ import java.sql.Blob
         BookList::class,
         BookListCrossRef::class
     ],
-    version = 8
+    version = 9
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -140,20 +140,6 @@ data class BookListCrossRef(
 )
 @Entity(
     primaryKeys= ["followingUsername", "followedUsername"],
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["name"],
-            childColumns = ["followingUsername"],
-            onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["name"],
-            childColumns = ["followedUsername"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
 )
 data class Following
     (

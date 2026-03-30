@@ -28,15 +28,15 @@ class UserRepository(
     }
 
     suspend fun fetchAndStorePhoto(name:String){
-        val response = userApi.fetchPhoto(name)
+        val response = userApi.getProfilePicture(name)
 
-        val path = imageStorage.saveBase64Image(response.imageBase64, response.type, name)
+        val path = imageStorage.saveBase64Image(response.imageBase64, /*response.type*/"PNG" , name)
         userDao.updateImage(name,path)
 
     }
 
     suspend fun updateAccount(username: String?, bio: String?): UpdateAccountResponse {
-        return api.updateAccount(
+        return userApi.updateAccount(
             UpdateAccountRequest(
                 username = username,
                 bio = bio
@@ -49,7 +49,7 @@ class UserRepository(
         newPassword: String,
         confirmPassword: String
     ): String {
-        return api.updatePassword(
+        return userApi.updatePassword(
             UpdatePasswordRequest(
                 oldPassword = oldPassword,
                 newPassword = newPassword,
@@ -59,26 +59,26 @@ class UserRepository(
     }
 
     suspend fun getUserProfile(username: String): ProfileResponse {
-        return api.getUserProfile(username)
+        return userApi.getUserProfile(username)
     }
 
     suspend fun followAccount(account: FollowRequest) {
-        api.followAccount(account)
+        userApi.followAccount(account)
     }
 
     suspend fun unfollowAccount(account: FollowRequest) {
-        api.unfollowAccount(account)
+        userApi.unfollowAccount(account)
     }
 
     suspend fun getFollowing(username: String): List<FollowResponse> {
-        return api.getFollowing(username)
+        return userApi.getFollowing(username)
     }
 
     suspend fun getFollowers(username: String): List<FollowResponse> {
-        return api.getFollowers(username)
+        return userApi.getFollowers(username)
     }
     suspend fun getProfilePicture(username: String): ProfilePictureResponse {
-        return api.getProfilePicture(username)
+        return userApi.getProfilePicture(username)
     }
 
     suspend fun updateProfilePicture(file: File): ProfilePictureResponse {
@@ -88,10 +88,10 @@ class UserRepository(
             file.name,
             requestBody
         )
-        return api.updateProfilePicture(filePart)
+        return userApi.updateProfilePicture(filePart)
     }
 
     suspend fun deleteAccount(password: String) {
-        api.deleteAccount(DeleteAccountRequest(password))
+        userApi.deleteAccount(DeleteAccountRequest(password))
     }
 }

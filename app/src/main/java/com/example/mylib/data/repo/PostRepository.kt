@@ -1,6 +1,8 @@
 package com.example.mylib.data.repo
 
+import com.example.mylib.data.models.PostCreateRequest
 import com.example.mylib.data.models.PostResponse
+import com.example.mylib.data.models.PostUpdateRequest
 import com.example.mylib.data.remote.PostApi
 import com.example.mylib.data.repo.Dao.PostDao
 
@@ -14,9 +16,8 @@ class PostRepository(
     }
 
     suspend fun createPost(text: String): PostResponse {
-        val hashMap = HashMap<String, Any>()
-        hashMap["text"] = text
-        val response = api.createPost(hashMap)
+        val request = PostCreateRequest(text = text)
+        val response = api.createPost(request)
         
         postDao.insert(
             Post(
@@ -31,10 +32,8 @@ class PostRepository(
     }
 
     suspend fun editPost(text: String, id: Int): PostResponse {
-        val hashMap = HashMap<String, Any>()
-        hashMap["text"] = text
-        hashMap["id"] = id
-        val response = api.editPost(hashMap)
+        val request = PostUpdateRequest(id = id, text = text)
+        val response = api.editPost(request)
         postDao.updatePost(id, text)
         return response
     }
