@@ -9,5 +9,4 @@ data class PostResponse (
     val imageBase64: String?,
     val imageType: String?
 
-    //TODO: add username to post response for local database functionality
 )

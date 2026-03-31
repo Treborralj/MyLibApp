@@ -17,7 +17,7 @@ class AuthenticationRepository(
         dao.insert(BookList(listId = 0, owner = username, type = "wantToRead"))
         dao.insert(BookList(listId = 0, owner = username, type = "amReading"))
         dao.insert(BookList(listId = 0, owner = username, type = "haveRead"))
-
+        //TODO: Add a fetch to get list contents on login, or local remains empty
         return api.login(LoginRequest(username, password))
     }
     suspend fun signup(username: String, password: String): SignupResponse {

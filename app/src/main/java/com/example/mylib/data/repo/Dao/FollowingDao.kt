@@ -25,10 +25,10 @@ interface FollowingDao {
     suspend fun clearForUser(username: String)
 
     @Query("SELECT * FROM Following WHERE followingUsername = :username")
-    fun getFollowedUsers(username: String): Flow<List<Following>>
+    fun getFollowedUsers(username: String): List<Following>
 
     @Query("SELECT * FROM Following WHERE followedUsername = :username")
-    fun getFollowingUsers(username: String): Flow<List<Following>>
+    fun getFollowingUsers(username: String): List<Following>
 
     @Transaction
     suspend fun clearAndInsert(username: String, followedUsers: List<Following>) {

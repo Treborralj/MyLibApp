@@ -14,4 +14,13 @@ interface UserDao {
 
     @Query("SELECT * FROM user")
     fun getAllUsers(): Flow<List<User>>
+
+    @Query("UPDATE User SET bio = :bio WHERE name = :name")
+    suspend fun updateBio(name: String, bio: String)
+
+    @Query("UPDATE User SET name = :newName WHERE name = :oldName")
+    suspend fun updateName(oldName: String, newName: String)
+
+    @Query("UPDATE User SET imagePath = :imagePath WHERE name = :name")
+    suspend fun updateImage(name: String, imagePath: String?)
 }

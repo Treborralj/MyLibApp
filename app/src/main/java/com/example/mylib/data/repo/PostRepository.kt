@@ -12,6 +12,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
+import com.example.mylib.data.repo.Dao.PostDao
 
 
 class PostRepository(

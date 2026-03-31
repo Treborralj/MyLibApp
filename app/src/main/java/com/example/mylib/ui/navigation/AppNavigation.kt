@@ -17,6 +17,7 @@ import com.example.mylib.data.remote.RetrofitClient
 import com.example.mylib.data.repo.AppDatabase
 import com.example.mylib.data.repo.AuthenticationRepository
 import com.example.mylib.data.repo.BookRepository
+import com.example.mylib.data.repo.ImageStorageManager
 import com.example.mylib.data.repo.PostRepository
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.SearchRepository
@@ -58,6 +59,7 @@ fun AppNavigation(){
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
     val navController = rememberNavController()
+    val imageStorageManager = ImageStorageManager(context)
 
     val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi, db.bookListDao())
     val authenticationFactory = AuthenticationViewModelFactory(authenticationRepository)
@@ -67,7 +69,7 @@ fun AppNavigation(){
     val bookFactory = SearchViewModelFactory(searchRepository)
     val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
-    val userRepository = UserRepository(RetrofitClient.userApi, db.postDao())
+    val userRepository = UserRepository(RetrofitClient.userApi, db.followingDao(), db.postDao(), db.userDao(), imageStorageManager)
     val homefeedFactory = HomefeedViewModelFactory(userRepository)
     val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
 

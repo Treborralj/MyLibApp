@@ -28,8 +28,8 @@ import java.sql.Blob
         Following::class,
         BookList::class,
         BookListCrossRef::class
-               ],
-    version = 10
+    ],
+    version = 9
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -77,7 +77,8 @@ abstract class AppDatabase : RoomDatabase() {
 data class User(
     @PrimaryKey val id: Int,
     val name: String,
-    val bio: String
+    val bio: String,
+    val imagePath: String? = null
 )
 @Entity
 data class Book(
@@ -106,8 +107,7 @@ data class Post(
     val accountId: Int,
     val text: String?,
     val time: String?,
-    //val image: Blob?,
-    val imageType: String?
+    val imagePath: String?
 )
 
 @Entity(
@@ -140,23 +140,9 @@ data class BookListCrossRef(
 )
 @Entity(
     primaryKeys= ["followingUsername", "followedUsername"],
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["name"],
-            childColumns = ["followingUsername"],
-            onDelete = ForeignKey.CASCADE
-        ),
-       ForeignKey(
-           entity = User::class,
-           parentColumns = ["name"],
-           childColumns = ["followedUsername"],
-           onDelete = ForeignKey.CASCADE
-       )
-   ]
 )
 data class Following
-(
+    (
     val followingUsername: String,
     val followedUsername: String
 )
