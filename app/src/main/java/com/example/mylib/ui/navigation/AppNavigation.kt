@@ -74,16 +74,14 @@ fun AppNavigation(){
     val navigationBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navigationBackStackEntry?.destination?.route
 
-
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
     val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
-        val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
-        val listFactory = ListViewModelFactory(listRepository)
-        val listViewModel: ListViewModel = viewModel(factory = listFactory)
+    val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
+    val listFactory = ListViewModelFactory(listRepository)
+    val listViewModel: ListViewModel = viewModel(factory = listFactory)
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
 
-
-    val postRepository = PostRepository(RetrofitClient.postApi)
+    val postRepository = PostRepository(RetrofitClient.postApi, context)
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 
@@ -199,13 +197,21 @@ fun AppNavigation(){
 
             composable(Routes.PostEditor.route) {
                 val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("postId") ?: 0
+                val title = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTitle") ?: ""
                 val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText") ?: ""
                 val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime") ?: ""
+                val username = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postUsername") ?: ""
+                val imageBase64 = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postImageBase64")
+                val imageType = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postImageType")
 
                 val post = PostResponse(
                     id = id,
+                    username = username,
+                    title = title,
                     text = text,
                     time = time,
+                    imageBase64 = imageBase64,
+                    imageType = imageType
                 )
 
                 val postEditorViewModel: PostEditorViewModel = viewModel(factory = postEditorFactory)

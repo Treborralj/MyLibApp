@@ -29,7 +29,7 @@ import java.sql.Blob
         BookList::class,
         BookListCrossRef::class
                ],
-    version = 7
+    version = 10
 )
 abstract class AppDatabase : RoomDatabase() {
 

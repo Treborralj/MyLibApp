@@ -2,8 +2,12 @@
 
 data class PostResponse (
     val id: Int,
+    val username: String,
+    val title: String?,
     val text: String,
-    val time: String
+    val time: String,
+    val imageBase64: String?,
+    val imageType: String?
 
     //TODO: add username to post response for local database functionality
 )
