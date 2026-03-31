@@ -56,18 +56,7 @@ fun ProfileReviews(
         modifier = Modifier.fillMaxSize()
     ){
         when {
-            !uiState.reviewsError.isEmpty() -> {
-                Text(
-                    text = uiState.reviewsError,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-            uiState.loadingReviews -> {
-                Text(
-                    text = "Loading reviews...",
-                )
-            }
-            uiState.reviews.isEmpty() && !uiState.loadingReviews -> {
+            uiState.reviews.isEmpty() && !uiState.loadingBody -> {
                 Text("This account has no reviews yet")
             }
 
@@ -79,11 +68,10 @@ fun ProfileReviews(
                     items(
                         items = uiState.reviews
                     ) { item ->
-                            Column(){
                                 PostFrame(
                                     username,
                                     "Book Title",
-                                    content = PostReviewItem.ReviewItem(item.review),
+                                    content = item,
                                     onEdit = {
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
@@ -94,19 +82,7 @@ fun ProfileReviews(
                                     },
                                     onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
                                 )
-                                /**
-                                Button(onClick = {
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewScore", item.review.score)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookId", item.review.bookId)
-                                    navController.navigate(Routes.ReviewEditor.route)
-                                }) {
-                                    Text("Edit")
-                                }
-                                */
-                            }
+
 
                     }
                 }

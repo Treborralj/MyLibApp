@@ -17,6 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +36,8 @@ import com.example.mylib.viewModel.HomefeedViewModel
 import com.example.mylib.viewModel.PostReviewItem
 import com.example.mylib.viewModel.ProfileViewModel
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.firstOrNull
 import kotlin.collections.set
 
 @Composable
@@ -58,23 +62,13 @@ fun ProfilePosts(
       }
      }
 
+
     Card(
         modifier = Modifier.fillMaxSize()
 
     ){
         when {
-            !uiState.postsError.isEmpty() -> {
-                Text(
-                    text = uiState.postsError,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-            uiState.loadingPosts -> {
-                Text(
-                    text = "Loading posts...",
-                )
-            }
-            uiState.posts.isEmpty() && !uiState.loadingPosts -> {
+            uiState.posts.isEmpty() && !uiState.loadingBody -> {
                 Text("This account has no posts yet")
             }
 
@@ -100,21 +94,6 @@ fun ProfilePosts(
                             },
                             onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)}
                         )
-                        /**
-                        if (username == MainActivity.loggedInUser) {
-                            Button(onClick = {
-                                 navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
-                                   navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
-                                  navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
-                                  navController.navigate(Routes.PostEditor.route)
-                            }) {
-                                Text("Edit")
-                            }
-
-                        }
-                        */
-
-
                     }
                 }
             }

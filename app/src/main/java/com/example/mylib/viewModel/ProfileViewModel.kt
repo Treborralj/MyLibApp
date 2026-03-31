@@ -2,6 +2,8 @@ package com.example.mylib.viewModel
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.MainActivity
@@ -14,34 +16,41 @@ import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.data.repo.PostRepository
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.UserRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
+import kotlin.collections.emptyList
 
 data class ProfileUiState(
+    val id: Int = -1,
+    val username: String = "",
+    val bio: String = "",
+    val profilePic: String? = null,
+
+    val posts: List<PostReviewItem.PostItem> = emptyList(),
+    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
+
+    val followers: List<FollowResponse> = emptyList(),
+    val following: List<FollowResponse> = emptyList(),
+
+    val loadingHeader: Boolean = false,
+    val loadingBody: Boolean = false,
+
+    val headerError: String = "",
+    val bodyError: String = "",
+
     val viewingReviews: Boolean = false,
     val viewingFollowers: Boolean = false,
     val viewingFollowing: Boolean = false,
-
-    val loading: Boolean = false,
-    val error: String = "",
-    val profileData: ProfileResponse? = null,
-
-    val posts: List<PostReviewItem.PostItem> = emptyList(),
-    val postsError: String = "",
-    val loadingPosts: Boolean = false,
-
-    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
-    val reviewsError: String = "",
-    val loadingReviews: Boolean = false,
-
     val amFollowing: Boolean = false,
-    val followError: String = "",
-    val loadingFollow: Boolean = false,
-)
+
+    )
 
 
 class ProfileViewModel(
@@ -80,18 +89,19 @@ class ProfileViewModel(
     fun follow(username: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(followError = "", loadingFollow = true)
+                _uiState.value = _uiState.value.copy(headerError = "", loadingHeader = true)
 
                 userRepository.followAccount(loggedInUser,username)
 
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
+                    loadingHeader = false,
                     amFollowing = true,
                 )
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
-                    postsError = "Failed to follow account"
+                    loadingHeader = false,
+                    headerError = "Failed to follow account"
                 )
             }
         }
@@ -100,17 +110,37 @@ class ProfileViewModel(
     fun unfollow(username: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(followError = "", loadingFollow = true)
+                _uiState.value = _uiState.value.copy(headerError = "", loadingHeader = true)
 
                 userRepository.unfollowAccount(loggedInUser,username)
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
+                    loadingHeader = false,
                     amFollowing = false,
                 )
+
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
-                    postsError = "Failed to unfollow account"
+                    loadingHeader = false,
+                    headerError = "Failed to unfollow account"
+                )
+            }
+        }
+    }
+
+    fun loadFollowers(username: String) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(headerError = "", loadingHeader = true)
+                val followers = userRepository.getFollowers(username);
+                _uiState.value = _uiState.value.copy(
+                    followers = followers,
+                    loadingHeader = false,
+                )
+            } catch (e: Exception) {
+                println("error loading followers: $e")
+                _uiState.value = _uiState.value.copy(
+                    loadingHeader = false,
+                    headerError = "Failed to fetch followers"
                 )
             }
         }
@@ -120,46 +150,44 @@ class ProfileViewModel(
     fun fetchProfile(username: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(error = "", loading = true)
+                _uiState.value = _uiState.value.copy(headerError = "", bodyError = "", loadingHeader = true, loadingBody = true)
 
-                var data = userRepository.getUserProfile(username);
+                val data = userRepository.getUserProfile(username);
 
+                val bio = data.bio;
 
-
-                println("profileData:\n"+
-                        "id: "+data.id.toString()+"\n"+
-                        "username: "+data.username+"\n"+
-                        "bio: "+data.bio+"\n"+
-                        "posts: "+data.posts+"\n"+
-                        "reviews: "+data.reviews+"\n"+
-                        "followers: "+data.followers+"\n"+
-                        "following: "+data.following+"\n"
-                )
-
-                if(data.bio==null) {
-                    data.bio = "No Bio"
+                when (bio) {
+                    is String -> {
+                        _uiState.value = _uiState.value.copy(
+                            bio = bio
+                        )
+                    }
+                    else -> {
+                        _uiState.value = _uiState.value.copy(
+                            bio = "No Bio"
+                        )
+                    }
                 }
-
-                _uiState.value = _uiState.value.copy(
-                    profileData = data,
-                )
 
                 run {
                     data.followers.forEach { follower ->
-                        if (follower.username == MainActivity.loggedInUser) {
+                        if (follower.username == loggedInUser) {
                             _uiState.value = _uiState.value.copy(
                                 amFollowing = true,
                             )
                             return@run
                         }
                     }
+                    _uiState.value = _uiState.value.copy(
+                        amFollowing = false,
+                    )
                 }
 
                 if (!data.posts.isEmpty()) {
                     val postsConverted = data.posts.map { PostReviewItem.PostItem(it) };
 
                     _uiState.value = _uiState.value.copy(
-                        posts = postsConverted,
+                        posts = postsConverted
                     )
                 }
 
@@ -172,13 +200,23 @@ class ProfileViewModel(
                 }
 
                 _uiState.value = _uiState.value.copy(
-                    loading = false,
+                    followers = data.followers,
+                    following = data.following,
+                    username = data.username,
+                    profilePic = data.profilePictureBase64,
+                    id = data.id,
+                )
+
+                _uiState.value = _uiState.value.copy(
+                    loadingHeader = false,
+                    loadingBody = false,
                 )
 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loading = false,
-                    error = "Failed to load profile"
+                    loadingHeader = false,
+                    loadingBody = false,
+                    headerError = "Failed to load profile"
                 )
             }
         }
@@ -188,25 +226,25 @@ class ProfileViewModel(
     fun fetchPosts(username: String, viewingReviews: Boolean = false) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(postsError = "", loadingPosts = true, viewingReviews = viewingReviews)
+                _uiState.value = _uiState.value.copy(bodyError = "", loadingBody = true, viewingReviews = viewingReviews)
 
                 val posts = postRepository.getAccountPosts(username);
                 if (posts.isEmpty()) {
                     _uiState.value = _uiState.value.copy(
-                        loadingPosts = false,
+                        loadingBody = false,
                     )
                     return@launch
                 }
                 val postsConverted = posts.map { PostReviewItem.PostItem(it) };
 
                 _uiState.value = _uiState.value.copy(
-                    loadingPosts = false,
-                    posts = postsConverted,
+                    loadingBody = false,
+                    posts = postsConverted
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingPosts = false,
-                    postsError = "Failed to load posts"
+                    loadingBody = false,
+                    bodyError = "Failed to load posts"
                 )
             }
         }
@@ -215,24 +253,26 @@ class ProfileViewModel(
     fun fetchReviews(username: String, viewingReviews: Boolean = true) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loadingReviews = true, reviewsError = "", viewingReviews = viewingReviews)
+                _uiState.value = _uiState.value.copy(loadingBody = true, bodyError = "", viewingReviews = viewingReviews)
 
                 val reviews = reviewRepository.fetchUserReviews(username);
                 if (reviews.isEmpty()) {
                     _uiState.value = _uiState.value.copy(
-                        loadingReviews = false,
+                        loadingBody = false,
                     )
                     return@launch
                 }
 
+                val reviewsConverted = reviews.map { PostReviewItem.ReviewItem(it) };
+
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                    reviews = reviews.map { PostReviewItem.ReviewItem(it) },
+                    loadingBody = false,
+                    reviews = reviewsConverted
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                    reviewsError = "Failed to load reviews"
+                    loadingBody = false,
+                    bodyError = "Failed to load reviews"
                 )
             }
         }
@@ -241,17 +281,17 @@ class ProfileViewModel(
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(
-                    loading = true,
-                    error = ""
+                    loadingHeader = true,
+                    headerError = ""
                 )
 
                 userRepository.updateProfilePicture(file)
+                fetchProfile(loggedInUser)
 
-                fetchProfile(MainActivity.loggedInUser)
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loading = false,
-                    error = e.message ?: "Failed to update profile picture"
+                    loadingHeader = false,
+                    headerError = e.message ?: "Failed to update profile picture"
                 )
             }
         }

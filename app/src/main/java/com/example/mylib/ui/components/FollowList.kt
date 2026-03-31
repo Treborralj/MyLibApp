@@ -77,10 +77,10 @@ fun FollowList(
 
     var accounts: List<FollowResponse> = emptyList();
     if (FollowListType.valueOf(type).name == "FOLLOWERS") {
-        accounts = uiState.profileData?.followers!!
+        accounts = uiState.followers
     }
     if (FollowListType.valueOf(type).name == "FOLLOWING") {
-        accounts = uiState.profileData?.following!!
+        accounts = uiState.following
     }
 
 

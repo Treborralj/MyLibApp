@@ -104,7 +104,7 @@ fun ProfilePage(
     //Observe state
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(username) {
         viewModel.fetchProfile(username);
     }
 
@@ -193,18 +193,13 @@ fun ProfilePage(
 
                             navController.currentBackStackEntry
                                 ?.savedStateHandle
-                                ?.set("editBio", uiState.profileData?.bio ?: "")
+                                ?.set("editBio", uiState.bio)
 
                             navController.navigate(Routes.EditUser.route)
                         }
-                    )                }
+                    )
+                }
 
-                when {
-                    uiState.loading || uiState.profileData == null -> {
-
-                    }
-
-                    true -> {
                         Column(
                             modifier = Modifier
                                 .padding(top=10.dp,start=20.dp,end=20.dp)
@@ -215,121 +210,123 @@ fun ProfilePage(
                             verticalArrangement = Arrangement.spacedBy(10.dp),
 
                             ) {
-                            when {
-                                !uiState.viewingReviews -> {
 
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth()
-                                            .padding(vertical = 10.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                    ) {
-                                        Row (
-                                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                                when {
+                                    uiState.username.isEmpty() -> {}
+
+                                    true -> {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth()
+                                                .padding(vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
                                         ) {
-                                            OutlinedButton(
-                                                shape = RoundedCornerShape(35),
-                                                onClick = { viewModel.fetchPosts(username) }
+                                            Row (
+                                                horizontalArrangement = Arrangement.spacedBy(20.dp),
                                             ) {
-                                                Text("Posts")
+
+                                                when {
+                                                    !uiState.viewingReviews -> {
+                                                        OutlinedButton(
+                                                            shape = RoundedCornerShape(35),
+                                                            onClick = { viewModel.fetchPosts(username) }
+                                                        ) {
+                                                            Text("Posts")
+                                                        }
+
+                                                        ElevatedButton(
+                                                            shape = RoundedCornerShape(35),
+                                                            onClick = { viewModel.fetchReviews(username) }
+                                                        ) {
+                                                            Text("Reviews")
+                                                        }
+                                                    }
+                                                    uiState.viewingReviews -> {
+                                                        ElevatedButton(
+                                                            shape = RoundedCornerShape(35),
+                                                            onClick = { viewModel.fetchPosts(username) }
+                                                        ) {
+                                                            Text("Posts")
+                                                        }
+
+                                                        OutlinedButton(
+                                                            shape = RoundedCornerShape(35),
+                                                            onClick = { viewModel.fetchReviews(username) }
+                                                        ) {
+                                                            Text("Reviews")
+                                                        }
+                                                    }
+                                                }
                                             }
 
-                                            ElevatedButton(
-                                                shape = RoundedCornerShape(35),
-                                                onClick = { viewModel.fetchReviews(username) }
-                                            ) {
-                                                Text("Reviews")
+                                            if (uiState.username == MainActivity.loggedInUser) {
+                                                IconButton(
+                                                    onClick = {
+                                                        navController.currentBackStackEntry?.savedStateHandle?.set("postId", null)
+                                                        navController.navigate(Routes.PostEditor.route)
+                                                    },
+                                                    content = {
+                                                        Icon(
+                                                            modifier = Modifier.size(60.dp),
+                                                            imageVector = Icons.Filled.Add,
+                                                            contentDescription = "Add Post",
+                                                            tint = Color(0xFF6650a4),
+                                                        )
+                                                    }
+                                                )
                                             }
+
                                         }
 
-                                        if (uiState.profileData!!.username == MainActivity.loggedInUser) {
-                                            IconButton(
-                                                onClick = {
-                                                    navController.currentBackStackEntry?.savedStateHandle?.set("postId", null)
-                                                    navController.navigate(Routes.PostEditor.route)
-                                                },
-                                                content = {
-                                                    Icon(
-                                                        modifier = Modifier.size(60.dp),
-                                                        imageVector = Icons.Filled.Add,
-                                                        contentDescription = "Add Post",
-                                                        tint = Color(0xFF6650a4),
+                                        when {
+                                            uiState.loadingBody -> {
+                                                CircularProgressIndicator()
+                                            }
+
+                                            uiState.username.isEmpty() -> {
+
+                                            }
+
+                                            !uiState.bodyError.isEmpty() -> {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth(),
+                                                    contentAlignment = Alignment.Center,
+                                                ) {
+                                                    Text(
+                                                        text = uiState.bodyError,
+                                                        color = MaterialTheme.colorScheme.error
                                                     )
                                                 }
-                                            )
-                                        }
+                                            }
 
-                                    }
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                    ) {
-                                        ProfilePosts(viewModel,navController,username)
+                                            !uiState.viewingReviews -> {
+                                                Card(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .fillMaxHeight()
+                                                ) {
+                                                    ProfilePosts(viewModel,navController,username)
+                                                }
+                                            }
+
+                                            uiState.viewingReviews -> {
+                                                Card(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .fillMaxHeight()
+                                                ) {
+                                                    ProfileReviews(viewModel,navController,username)
+                                                }
+                                            }
+                                        }
                                     }
                                 }
 
-                                uiState.viewingReviews -> {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth()
-                                            .padding(vertical = 10.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                    ) {
-                                        Row(horizontalArrangement = Arrangement.spacedBy(20.dp),) {
-                                            ElevatedButton(
-                                                shape = RoundedCornerShape(35),
-                                                onClick = { viewModel.fetchPosts(username) }
-                                            ) {
-                                                Text("Posts")
-                                            }
 
-                                            OutlinedButton(
-                                                shape = RoundedCornerShape(35),
-                                                onClick = { viewModel.fetchReviews(username) }
-                                            ) {
-                                                Text("Reviews")
-                                            }
-                                        }
-
-                                        if (uiState.profileData!!.username == MainActivity.loggedInUser) {
-                                            IconButton(
-                                                onClick = {
-                                                    navController.currentBackStackEntry?.savedStateHandle?.set("postId", null)
-                                                    navController.navigate(Routes.PostEditor.route)
-                                                },
-                                                content = {
-                                                    Icon(
-                                                        modifier = Modifier.size(60.dp),
-                                                        imageVector = Icons.Filled.Add,
-                                                        contentDescription = "Add Review",
-                                                        tint = Color(0xFF6650a4),
-                                                    )
-                                                }
-                                            )
-                                        }
-
-                                    }
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                    ) {
-                                        ProfileReviews(viewModel,navController,username)
-                                    }
-                                }
-                            }
                         }
-                    }
-
-                }
-
-
             }
         }
-
-
     }
-
-
 }
 
 
