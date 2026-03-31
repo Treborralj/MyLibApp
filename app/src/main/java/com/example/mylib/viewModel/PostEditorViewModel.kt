@@ -1,17 +1,13 @@
 package com.example.mylib.viewModel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mylib.MainActivity
 import com.example.mylib.data.models.PostResponse
-import com.example.mylib.data.models.SignupResponse
-import com.example.mylib.data.repo.AuthenticationRepository
 import com.example.mylib.data.repo.PostRepository
-import com.example.mylib.viewModel.authentication.AuthenticationUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 
 data class PostUiState(
@@ -20,7 +16,6 @@ data class PostUiState(
     val result: PostResponse? = null
 )
 
-
 class PostEditorViewModel(
     private val repository: PostRepository
 ): ViewModel() {
@@ -28,7 +23,12 @@ class PostEditorViewModel(
     private val _uiState = MutableStateFlow(PostUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun editPost(text: String, id:Int? = null){
+    fun editPost(
+        title: String,
+        text: String,
+        imageUri: Uri?,
+        id: Int? = null
+    ){
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 result = null,
@@ -38,10 +38,10 @@ class PostEditorViewModel(
             var response: PostResponse? = null
             try{
                 if(id == null) {
-                    response = repository.createPost(text)
+                    response = repository.createPost(title, text, imageUri)
                 }
                 else {
-                    response = repository.editPost(text,id)
+                    response = repository.editPost(id, title, text, imageUri)
                 }
                 _uiState.value = _uiState.value.copy(
                     loading = false,
@@ -77,6 +77,4 @@ class PostEditorViewModel(
             }
         }
     }
-
-
 }
