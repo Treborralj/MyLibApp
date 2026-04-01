@@ -2,6 +2,7 @@ package com.example.mylib.data.repo.Dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.mylib.data.repo.User
 import kotlinx.coroutines.flow.Flow
@@ -9,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: User)
 
     @Query("SELECT * FROM user")
@@ -23,4 +24,12 @@ interface UserDao {
 
     @Query("UPDATE User SET imagePath = :imagePath WHERE name = :name")
     suspend fun updateImage(name: String, imagePath: String?)
+
+    @Query("SELECT imagePath FROM User WHERE name = :name")
+    suspend fun getImagePath(name: String): String?
+
+    @Query("DELETE FROM User WHERE name = :name")
+    suspend fun delete(name: String)
+
+
 }

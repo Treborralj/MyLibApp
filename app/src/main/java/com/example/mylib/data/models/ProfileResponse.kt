@@ -1,9 +1,11 @@
 package com.example.mylib.data.models
+
 data class ProfileResponse(
     val id: Int,
     var username: String,
     var bio: String?,
     val profilePictureBase64: String?,
+    //TODO: add profile picture type
     var posts: List<PostResponse>,
     var reviews: List<ReviewResponse>,
     var followers: List<FollowResponse>,

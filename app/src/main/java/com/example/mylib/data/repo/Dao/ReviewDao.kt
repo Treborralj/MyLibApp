@@ -18,9 +18,15 @@ interface ReviewDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReview(review: Review)
 
+    @Query("DELETE FROM Review WHERE id = :id")
+    suspend fun deleteReview(id: Int)
+
     @Query("SELECT AVG(score) FROM Review WHERE bookId = :bookId")
     suspend fun getAverageScoreForBook(bookId: Int): Double?
 
     @Query("SELECT * FROM Review WHERE id = :reviewId")
-    suspend fun observeReviewById(reviewId: Int): Review
+    suspend fun getReviewById(reviewId: Int): Review?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(reviews: List<Review>)
 }
