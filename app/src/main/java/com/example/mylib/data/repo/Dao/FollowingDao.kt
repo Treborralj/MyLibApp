@@ -22,7 +22,10 @@ interface FollowingDao {
     suspend fun insertAll(followings: List<Following>)
 
     @Query("DELETE FROM Following WHERE followingUsername = :username")
-    suspend fun clearForUser(username: String)
+    suspend fun clearFollowingForUser(username: String)
+
+    @Query("DELETE FROM Following WHERE followedUsername = :username")
+    suspend fun clearFollowersForUser(username: String)
 
     @Query("SELECT * FROM Following WHERE followingUsername = :username")
     fun getFollowedUsers(username: String): List<Following>
@@ -31,8 +34,14 @@ interface FollowingDao {
     fun getFollowingUsers(username: String): List<Following>
 
     @Transaction
-    suspend fun clearAndInsert(username: String, followedUsers: List<Following>) {
-        clearForUser(username)
+    suspend fun clearFollowingAndInsert(username: String, followedUsers: List<Following>) {
+        clearFollowingForUser(username)
         insertAll(followedUsers)
+    }
+
+    @Transaction
+    suspend fun clearFollowersAndInsert(username: String, followers: List<Following>) {
+        clearFollowersForUser(username)
+        insertAll(followers)
     }
 }

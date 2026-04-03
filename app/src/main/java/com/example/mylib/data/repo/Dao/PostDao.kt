@@ -1,7 +1,6 @@
 package com.example.mylib.data.repo.Dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -23,7 +22,9 @@ interface PostDao {
     @Query("SELECT * FROM Post WHERE id= :id")
     suspend fun observePostById(id: Int): Post
 
-    @Query("SELECT * FROM Post WHERE accountId = :accountId")
-    fun observePostsByAccountId(accountId: Int): Flow<List<Post>>
+    @Query("SELECT * FROM Post WHERE username = :username")
+    fun observePostsByUsername(username: String): Flow<List<Post>>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(posts: List<Post>)
 }

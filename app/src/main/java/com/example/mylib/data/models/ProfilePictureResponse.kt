@@ -1,5 +1,6 @@
 package com.example.mylib.data.models
 
 data class ProfilePictureResponse(
-    val imageBase64: String
+    val imageBase64: String,
+    val type: String? = null
 )

@@ -124,19 +124,7 @@ class ProfileViewModel(
 
                 var data = userRepository.getUserProfile(username);
 
-
-
-                println("profileData:\n"+
-                        "id: "+data.id.toString()+"\n"+
-                        "username: "+data.username+"\n"+
-                        "bio: "+data.bio+"\n"+
-                        "posts: "+data.posts+"\n"+
-                        "reviews: "+data.reviews+"\n"+
-                        "followers: "+data.followers+"\n"+
-                        "following: "+data.following+"\n"
-                )
-
-                if(data.bio==null) {
+                if(data.bio == null) {
                     data.bio = "No Bio"
                 }
 
@@ -144,38 +132,28 @@ class ProfileViewModel(
                     profileData = data,
                 )
 
-                run {
-                    data.followers.forEach { follower ->
-                        if (follower.username == MainActivity.loggedInUser) {
-                            _uiState.value = _uiState.value.copy(
-                                amFollowing = true,
-                            )
-                            return@run
-                        }
+                var foundAmFollowing = false
+                data.followers?.forEach { follower ->
+                    if (follower.username == MainActivity.loggedInUser) {
+                        foundAmFollowing = true
                     }
                 }
+                
+                _uiState.value = _uiState.value.copy(
+                    amFollowing = foundAmFollowing
+                )
 
-                if (!data.posts.isEmpty()) {
-                    val postsConverted = data.posts.map { PostReviewItem.PostItem(it) };
-
-                    _uiState.value = _uiState.value.copy(
-                        posts = postsConverted,
-                    )
-                }
-
-                if (!data.reviews.isEmpty()) {
-                    val reviewsConverted = data.reviews.map { PostReviewItem.ReviewItem(it) };
-
-                    _uiState.value = _uiState.value.copy(
-                        reviews = reviewsConverted,
-                    )
-                }
+                val postsConverted = data.posts?.map { PostReviewItem.PostItem(it) } ?: emptyList()
+                val reviewsConverted = data.reviews?.map { PostReviewItem.ReviewItem(it) } ?: emptyList()
 
                 _uiState.value = _uiState.value.copy(
+                    posts = postsConverted,
+                    reviews = reviewsConverted,
                     loading = false,
                 )
 
             } catch (e: Exception) {
+                e.printStackTrace()
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     error = "Failed to load profile"
@@ -191,12 +169,6 @@ class ProfileViewModel(
                 _uiState.value = _uiState.value.copy(postsError = "", loadingPosts = true, viewingReviews = viewingReviews)
 
                 val posts = postRepository.getAccountPosts(username);
-                if (posts.isEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        loadingPosts = false,
-                    )
-                    return@launch
-                }
                 val postsConverted = posts.map { PostReviewItem.PostItem(it) };
 
                 _uiState.value = _uiState.value.copy(
@@ -218,12 +190,6 @@ class ProfileViewModel(
                 _uiState.value = _uiState.value.copy(loadingReviews = true, reviewsError = "", viewingReviews = viewingReviews)
 
                 val reviews = reviewRepository.fetchUserReviews(username);
-                if (reviews.isEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        loadingReviews = false,
-                    )
-                    return@launch
-                }
 
                 _uiState.value = _uiState.value.copy(
                     loadingReviews = false,
@@ -245,7 +211,7 @@ class ProfileViewModel(
                     error = ""
                 )
 
-                userRepository.updateProfilePicture(file)
+                userRepository.updateProfilePicture(loggedInUser, file)
 
                 fetchProfile(MainActivity.loggedInUser)
             } catch (e: Exception) {

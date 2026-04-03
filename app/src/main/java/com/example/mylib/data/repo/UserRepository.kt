@@ -12,6 +12,7 @@ import com.example.mylib.data.models.ProfileResponse
 import com.example.mylib.data.remote.UserApi
 import com.example.mylib.data.repo.Dao.FollowingDao
 import com.example.mylib.data.repo.Dao.PostDao
+import com.example.mylib.data.repo.Dao.ReviewDao
 import com.example.mylib.data.repo.Dao.UserDao
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -23,20 +24,28 @@ class UserRepository(
     private val followingDao: FollowingDao,
     private val postDao: PostDao,
     private val userDao: UserDao,
+    private val reviewDao: ReviewDao,
     private val imageStorage: ImageStorageManager
 ) {
     suspend fun fetchFeed(): List<PostResponse>{
-        return userApi.fetchFeed()
+        val response = userApi.fetchFeed()
+
+        postDao.insertAll(response.map {
+            var path: String? = null
+            if (it.imageBase64 != null && it.imageType != null) {
+                path = imageStorage.saveBase64Image(it.imageBase64, it.imageType, "post_" + it.id)
+            }
+            Post(
+                id = it.id,
+                username = it.username,
+                title = it.title,
+                text = it.text,
+                time = it.time,
+                imagePath = path
+            )
+        })
+        return response
     }
-
-    /*
-    suspend fun fetchAndStorePhoto(name:String){
-        val response = userApi.getProfilePicture(name)
-
-        val path = imageStorage.saveBase64Image(response.imageBase64, response.type, name) // error due to missing backend logic
-        userDao.updateImage(name,path)
-
-    }*/
 
     suspend fun updateAccount(username: String?, bio: String?): UpdateAccountResponse {
         return userApi.updateAccount(
@@ -62,7 +71,66 @@ class UserRepository(
     }
 
     suspend fun getUserProfile(username: String): ProfileResponse {
-        return userApi.getUserProfile(username)
+        val response = userApi.getUserProfile(username)
+        
+        var profileType = /*response.imageType ?:*/ "jpg"
+        val path = if (response.profilePictureBase64 != null) {
+            imageStorage.saveBase64Image(response.profilePictureBase64, profileType, response.username)
+        } else null
+
+        userDao.insert(User(
+            id = response.id,
+            name = response.username,
+            bio = response.bio,
+            imagePath = path
+        ))
+
+        response.posts?.let { posts ->
+            postDao.insertAll(posts.map {
+                var postPath: String? = null
+                if (it.imageBase64 != null && it.imageType != null) {
+                    postPath = imageStorage.saveBase64Image(it.imageBase64, it.imageType, "post_" + it.id)
+                }
+                Post(
+                    id = it.id,
+                    username = it.username,
+                    title = it.title,
+                    text = it.text,
+                    time = it.time,
+                    imagePath = postPath
+                )
+            })
+        }
+
+        response.reviews?.let { reviews ->
+            reviewDao.insertAll(reviews.map {
+                Review(
+                    id = it.id,
+                    bookId = it.bookId,
+                    username = it.username ?: response.username,
+                    text = it.text,
+                    score = it.score,
+                    time = it.time
+                )
+            })
+        }
+
+        response.followers?.let { followers ->
+            val followerEntities = followers.map { 
+                Following(followingUsername = it.username, followedUsername = response.username) 
+            }
+            followingDao.clearFollowersAndInsert(response.username, followerEntities)
+        }
+
+        response.following?.let { following ->
+            val followingEntities = following.map { 
+                Following(followingUsername = response.username, followedUsername = it.username) 
+            }
+            followingDao.clearFollowingAndInsert(response.username, followingEntities)
+        }
+
+        // I cant be assed to recreate a response from local, and should be done on viewmodel level
+        return response
     }
 
     suspend fun followAccount(loggedinUser: String, username: String) {
@@ -88,18 +156,17 @@ class UserRepository(
     }
 
     suspend fun getFollowers(loggedinUser: String): List<FollowResponse> {
-        val remoteFollowing = userApi.getFollowing(loggedinUser)
+        val remoteFollowers = userApi.getFollowers(loggedinUser)
 
-        val followingEntities = remoteFollowing.map { followResponse ->
+        val followerEntities = remoteFollowers.map { followResponse ->
             Following(
-                followingUsername = loggedinUser,
-                followedUsername = followResponse.username
+                followingUsername = followResponse.username,
+                followedUsername = loggedinUser
             )
         }
-        followingDao.clearAndInsert(loggedinUser, followingEntities)
+        followingDao.clearFollowersAndInsert(loggedinUser, followerEntities)
 
-        val localFollowing = followingDao.getFollowingUsers(loggedinUser)
-        return localFollowing.map { FollowResponse(it.followingUsername) }
+        return remoteFollowers
     }
 
     suspend fun getFollowing(loggedinUser: String): List<FollowResponse> {
@@ -111,25 +178,34 @@ class UserRepository(
                 followedUsername = followResponse.username
             )
         }
-        followingDao.clearAndInsert(loggedinUser, followingEntities)
+        followingDao.clearFollowingAndInsert(loggedinUser, followingEntities)
 
-        val localFollowing = followingDao.getFollowedUsers(loggedinUser)
-        return localFollowing.map { FollowResponse(it.followedUsername) }
+        return remoteFollowing
     }
 
-
-    suspend fun getProfilePicture(username: String): ProfilePictureResponse {
-        return userApi.getProfilePicture(username)
+    suspend fun getProfilePicture(username: String): String? {
+        val response = userApi.getProfilePicture(username)
+        val type = response.type ?: "jpg"
+        val path = imageStorage.saveBase64Image(response.imageBase64, type, username)
+        userDao.updateImage(username, path)
+        return userDao.getImagePath(username)
     }
 
-    suspend fun updateProfilePicture(file: File): ProfilePictureResponse {
+    suspend fun updateProfilePicture(username: String, file: File): ProfilePictureResponse {
         val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
         val filePart = MultipartBody.Part.createFormData(
             "file",
             file.name,
             requestBody
         )
-        return userApi.updateProfilePicture(filePart)
+
+        val response = userApi.updateProfilePicture(filePart)
+        
+        // After successful upload, refresh the local image path
+        val path = imageStorage.saveBase64Image(response.imageBase64, response.type ?: "jpg", username)
+        userDao.updateImage(username, path)
+
+        return response
     }
 
     suspend fun deleteAccount(password: String) {

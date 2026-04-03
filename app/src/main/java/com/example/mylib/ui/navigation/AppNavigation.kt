@@ -69,7 +69,7 @@ fun AppNavigation(){
     val bookFactory = SearchViewModelFactory(searchRepository)
     val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
-    val userRepository = UserRepository(RetrofitClient.userApi, db.followingDao(), db.postDao(), db.userDao(), imageStorageManager)
+    val userRepository = UserRepository(RetrofitClient.userApi, db.followingDao(), db.postDao(), db.userDao(), db.reviewDao(), imageStorageManager)
     val homefeedFactory = HomefeedViewModelFactory(userRepository)
     val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
 

@@ -3,6 +3,7 @@ package com.example.mylib.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.MainActivity
+import com.example.mylib.MainActivity.Companion.loggedInUser
 import com.example.mylib.data.repo.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,12 +86,12 @@ class EditUserViewModel(
         }
     }
 
-    fun updateProfilePicture(file: File) {
+    fun updateProfilePicture( file: File) {
         viewModelScope.launch {
             try {
                 _uiState.value = EditUserUiState(isLoading = true)
 
-                userRepository.updateProfilePicture(file)
+                userRepository.updateProfilePicture(loggedInUser, file)
 
                 _uiState.value = EditUserUiState(
                     successMessage = "Profile picture updated successfully."
