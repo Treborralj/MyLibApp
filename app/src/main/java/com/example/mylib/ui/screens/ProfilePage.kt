@@ -19,9 +19,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -65,6 +68,7 @@ fun ProfilePage(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(username) {
+        viewModel.setUser(username)
         viewModel.fetchProfile(username);
     }
 
@@ -172,7 +176,7 @@ fun ProfilePage(
                             ) {
 
                                 when {
-                                    uiState.username.isEmpty() -> {}
+                                    uiState.profileData == null || uiState.loading -> {}
 
                                     true -> {
                                         Row(
@@ -218,7 +222,7 @@ fun ProfilePage(
                                                 }
                                             }
 
-                                            if (uiState.username == MainActivity.loggedInUser) {
+                                            if (username == MainActivity.loggedInUser) {
                                                 IconButton(
                                                     onClick = {
                                                         navController.currentBackStackEntry?.savedStateHandle?.set("postId", null)
@@ -238,22 +242,22 @@ fun ProfilePage(
                                         }
 
                                         when {
-                                            uiState.loadingBody -> {
+                                            uiState.loading -> {
                                                 CircularProgressIndicator()
                                             }
 
-                                            uiState.username.isEmpty() -> {
+                                            uiState.profileData == null -> {
 
                                             }
 
-                                            !uiState.bodyError.isEmpty() -> {
+                                            !uiState.error.isEmpty() -> {
                                                 Box(
                                                     modifier = Modifier
                                                         .fillMaxWidth(),
                                                     contentAlignment = Alignment.Center,
                                                 ) {
                                                     Text(
-                                                        text = uiState.bodyError,
+                                                        text = uiState.error,
                                                         color = MaterialTheme.colorScheme.error
                                                     )
                                                 }

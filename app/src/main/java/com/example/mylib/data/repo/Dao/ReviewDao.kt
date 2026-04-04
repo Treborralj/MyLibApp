@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.mylib.data.repo.Post
 import com.example.mylib.data.repo.Review
 import kotlinx.coroutines.flow.Flow
 
@@ -29,4 +30,7 @@ interface ReviewDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(reviews: List<Review>)
+
+    @Query("SELECT * FROM Review WHERE username = :username")
+    fun observeReviewsByUsername(username: String): Flow<List<Review>>
 }

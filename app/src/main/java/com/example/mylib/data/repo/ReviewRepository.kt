@@ -6,7 +6,9 @@ import com.example.mylib.data.models.ReviewUpdateRequest
 import com.example.mylib.data.remote.ReviewApi
 import com.example.mylib.data.repo.Dao.BookDao
 import com.example.mylib.data.repo.Dao.ReviewDao
+import com.example.mylib.viewModel.PostReviewItem
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class ReviewRepository(
     private val api: ReviewApi,
@@ -102,5 +104,18 @@ class ReviewRepository(
         if (bookId != null) {
             updateLocalBookScore(bookId)
         }
+    }
+
+    fun observeReviewsByUsername(username: String): Flow<List<PostReviewItem.ReviewItem>> {
+        return reviewDao.observeReviewsByUsername(username)
+            .map{ it.map{review ->
+                PostReviewItem.ReviewItem(ReviewResponse(
+                    id =review.id,
+                    username =review.username,
+                    text =review.text,
+                    time =review.time,
+                    score = review.score,
+                    bookId = review.bookId,
+                ))} }
     }
 }

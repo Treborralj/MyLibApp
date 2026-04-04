@@ -48,6 +48,7 @@ fun ProfilePosts(
 )
 {
      val uiState by viewModel.uiState.collectAsState();
+    val posts by viewModel.uiPostState.collectAsState()
 
     val refreshPosts =
           navController.currentBackStackEntry
@@ -68,7 +69,7 @@ fun ProfilePosts(
 
     ){
         when {
-            uiState.posts.isEmpty() && !uiState.loadingBody -> {
+            uiState.posts.isEmpty() && !uiState.loading -> {
                 Text("This account has no posts yet")
             }
 
@@ -79,21 +80,23 @@ fun ProfilePosts(
                     verticalArrangement = Arrangement.spacedBy(30.dp)
                 ){
                     items(
-                        items = uiState.posts
+                        items = posts
                     ) { item ->
+                        if (item.post.username.isEmpty()) {
 
-
-                        PostFrame(
-                            username = username,
-                            content = item,
-                            onEdit = {
-                                navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
-                                navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
-                                navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
-                                navController.navigate(Routes.PostEditor.route)
-                            },
-                            onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)}
-                        )
+                        } else {
+                            PostFrame(
+                                username = username,
+                                content = item,
+                                onEdit = {
+                                    navController.currentBackStackEntry?.savedStateHandle?.set("postId", item.post.id)
+                                    navController.currentBackStackEntry?.savedStateHandle?.set("postText", item.post.text)
+                                    navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
+                                    navController.navigate(Routes.PostEditor.route)
+                                },
+                                onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)}
+                            )
+                        }
                     }
                 }
             }

@@ -36,7 +36,10 @@ class ImageStorageManager(private val context: Context) {
         }
     }
 
-    fun getFile(path: String): File? {
+    fun getFile(path: String?): File? {
+        if (path==null) {
+            return null
+        }
         val file = File(path)
         return if (file.exists()) file else null
     }

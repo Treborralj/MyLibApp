@@ -17,6 +17,7 @@ import com.example.mylib.data.remote.RetrofitClient
 import com.example.mylib.data.repo.AppDatabase
 import com.example.mylib.data.repo.AuthenticationRepository
 import com.example.mylib.data.repo.BookRepository
+import com.example.mylib.data.repo.FollowingRepository
 import com.example.mylib.data.repo.ImageStorageManager
 import com.example.mylib.data.repo.PostRepository
 import com.example.mylib.data.repo.ReviewRepository
@@ -83,8 +84,10 @@ fun AppNavigation(){
     val listViewModel: ListViewModel = viewModel(factory = listFactory)
     val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
 
-    val postRepository = PostRepository(RetrofitClient.postApi, context)
-    val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
+    val followingRepository =
+        FollowingRepository(followingDao = db.followingDao(), RetrofitClient.userApi)
+    val postRepository = PostRepository(RetrofitClient.postApi, context, db.postDao(),imageStorageManager)
+    val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository,followingRepository)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 
     val postEditorFactory = PostEditorViewModelFactory(postRepository)
@@ -165,6 +168,9 @@ fun AppNavigation(){
                     )
                 }
                 composable(Routes.Profile.route + "/{username}"){ backStackEntry ->
+
+                    //val appDataBase = AppDatabase.getInstance(context)
+
                     val username = backStackEntry.arguments
                         ?.getString("username")
                         ?: return@composable
@@ -230,6 +236,7 @@ fun AppNavigation(){
                 val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime") ?: ""
                 val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore") ?: 0.0
                 val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId") ?: 0
+                val username = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewUsername") ?: ""
 
                 val review: ReviewResponse? = if (id != null) {
                     ReviewResponse(
@@ -237,7 +244,8 @@ fun AppNavigation(){
                         text = text,
                         time = time,
                         score = score,
-                        bookId = bookId
+                        bookId = bookId,
+                        username=username,
                     )
                 } else {
                     null

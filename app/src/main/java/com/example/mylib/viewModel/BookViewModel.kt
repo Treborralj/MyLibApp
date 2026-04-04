@@ -6,14 +6,12 @@ import com.example.mylib.MainActivity.Companion.loggedInUser
 import com.example.mylib.data.models.BookRequest
 import com.example.mylib.data.models.BookResponse
 import com.example.mylib.data.models.ReviewResponse
-import com.example.mylib.data.models.UserResponse
 import com.example.mylib.data.repo.Book
 import com.example.mylib.data.repo.BookRepository
 import com.example.mylib.data.repo.Review
 import com.example.mylib.data.repo.ListRepository
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.viewModel.Lists.ListType
-import com.example.mylib.viewModel.search.SearchItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -137,7 +135,8 @@ fun Review.toReviewResponse(): ReviewResponse {
         bookId = bookId,
         text = text ?: "",
         score = score,
-        time = time ?: ""
+        time = time ?: "",
+        username = username
     )
 }
 fun Book.toBookResponse(): BookResponse {

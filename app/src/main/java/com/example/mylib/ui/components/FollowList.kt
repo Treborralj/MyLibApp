@@ -73,16 +73,8 @@ fun FollowList(
     onClickUser: (username:String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState();
-
-
-    var accounts: List<FollowResponse> = emptyList();
-    if (FollowListType.valueOf(type).name == "FOLLOWERS") {
-        accounts = uiState.followers
-    }
-    if (FollowListType.valueOf(type).name == "FOLLOWING") {
-        accounts = uiState.following
-    }
-
+    val followers by viewModel.uiFollowerState.collectAsState()
+    val following by viewModel.uiFollowingState.collectAsState()
 
     Card(
         modifier = Modifier
@@ -135,7 +127,8 @@ fun FollowList(
                 verticalArrangement = Arrangement.spacedBy(15.dp)
             ){
                 items(
-                    items = accounts,
+                    items = if(FollowListType.valueOf(type).name == "FOLLOWING")
+                        following else followers
                 ){ item ->
                     Box(
                         contentAlignment = Alignment.CenterStart,

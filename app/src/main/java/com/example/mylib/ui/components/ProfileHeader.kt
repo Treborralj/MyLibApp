@@ -49,12 +49,8 @@ fun ProfileHeader(
     onEditProfile: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    var followerCount by remember { mutableIntStateOf(uiState.followers.size) }
-
-    LaunchedEffect(uiState.followers) {
-        followerCount = uiState.followers.size
-    }
+    val followers by viewModel.uiFollowerState.collectAsState()
+    val following by viewModel.uiFollowingState.collectAsState()
 
     Surface(
         modifier = Modifier
@@ -62,7 +58,7 @@ fun ProfileHeader(
             .height(intrinsicSize = IntrinsicSize.Min)
     ) {
         when {
-            uiState.loadingHeader -> {
+            uiState.loading -> {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -71,7 +67,7 @@ fun ProfileHeader(
                 }
             }
 
-            uiState.username.isEmpty() -> {
+            uiState.profileData == null -> {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -99,7 +95,7 @@ fun ProfileHeader(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(0.dp),
                     ) {
-                        val profileBitmap = base64ToImageBitmap(uiState.profilePic)
+                        val profileBitmap = base64ToImageBitmap(uiState.profileData!!.profilePictureBase64)
 
                         if (profileBitmap != null) {
                             Image(
@@ -131,7 +127,7 @@ fun ProfileHeader(
                                 modifier = Modifier
                                     .padding()
                                     .fillMaxWidth(),
-                                text = uiState.username,
+                                text = uiState.profileData!!.username,
                                 style = MaterialTheme.typography.titleLarge,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
@@ -144,13 +140,13 @@ fun ProfileHeader(
                         horizontalArrangement = Arrangement.spacedBy(0.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (uiState.username != MainActivity.loggedInUser) {
+                        if (uiState.profileData!!.username != MainActivity.loggedInUser) {
                             if (!uiState.amFollowing) {
                                 Button(
                                     modifier = Modifier.fillMaxWidth(0.3f),
                                     shape = RoundedCornerShape(35),
                                     onClick = {
-                                        viewModel.follow(uiState.username)
+                                        viewModel.follow(uiState.profileData!!.username)
                                     }
                                 ) {
                                     Text(
@@ -165,7 +161,7 @@ fun ProfileHeader(
                                     modifier = Modifier.fillMaxWidth(0.3f),
                                     shape = RoundedCornerShape(35),
                                     onClick = {
-                                        viewModel.unfollow(uiState.username)
+                                        viewModel.unfollow(uiState.profileData!!.username)
                                     }
                                 ) {
                                     Text(
@@ -202,7 +198,7 @@ fun ProfileHeader(
                                 }
                             ) {
                                 Text(
-                                    text = followerCount.toString() + "\nFollowers",
+                                    text = followers.size.toString() + "\nFollowers",
                                     style = MaterialTheme.typography.labelLarge,
                                     textAlign = TextAlign.Center,
                                 )
@@ -215,7 +211,7 @@ fun ProfileHeader(
                                 }
                             ) {
                                 Text(
-                                    text = uiState.following.size.toString() + "\nFollowing",
+                                    text = following.size.toString() + "\nFollowing",
                                     style = MaterialTheme.typography.labelLarge,
                                     textAlign = TextAlign.Center,
                                 )
@@ -223,7 +219,7 @@ fun ProfileHeader(
                         }
                     }
                     when {
-                        !uiState.headerError.isEmpty() -> {
+                        !uiState.error.isEmpty() -> {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -231,7 +227,7 @@ fun ProfileHeader(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = uiState.headerError,
+                                    text = uiState.error,
                                     color = MaterialTheme.colorScheme.error
                                 )
                             }

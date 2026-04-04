@@ -2,6 +2,8 @@ package com.example.mylib.data.repo
 
 import android.content.Context
 import android.net.Uri
+import androidx.test.espresso.base.Default
+
 import com.example.mylib.data.models.PostCreateRequest
 import com.example.mylib.data.models.PostResponse
 import com.example.mylib.data.models.PostUpdateRequest
@@ -13,11 +15,17 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 import com.example.mylib.data.repo.Dao.PostDao
+import com.example.mylib.viewModel.PostReviewItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlin.io.encoding.Base64
 
 
 class PostRepository(
     private val api: PostApi,
-    private val context: Context
+    private val context: Context,
+    private val postDao: PostDao,
+    private val imageStorage: ImageStorageManager
 ) {
 
     suspend fun getAccountPosts(username: String): List<PostResponse> {
@@ -69,4 +77,20 @@ class PostRepository(
             requestBody
         )
     }
+
+    fun observePostsByUsername(username: String): Flow<List<PostReviewItem.PostItem>> {
+        return postDao.observePostsByUsername(username)
+            .map{ it.map{post ->
+                PostReviewItem.PostItem(PostResponse(
+                    id =post.id,
+                    username =post.username,
+                    title =post.title,
+                    text =post.text,
+                    time =post.time,
+                    imageType = post.imageType,
+                    imageBase64 = imageStorage.getFile(post.imagePath)?.readBytes()?.let { source -> Base64.encode(source) }
+                ))} }
+    }
 }
+
+

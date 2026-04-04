@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.mylib.data.repo.Following
+import com.example.mylib.data.repo.Post
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -44,4 +45,10 @@ interface FollowingDao {
         clearFollowersForUser(username)
         insertAll(followers)
     }
+
+    @Query("SELECT * FROM `Following` WHERE followedUsername = :username")
+    fun observeFollowersByUsername(username: String): Flow<List<Following>>
+
+    @Query("SELECT * FROM `Following` WHERE followingUsername = :username")
+    fun observeFollowingByUsername(username: String): Flow<List<Following>>
 }

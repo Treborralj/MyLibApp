@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.mylib.data.repo.Post
 import com.example.mylib.data.repo.User
 import kotlinx.coroutines.flow.Flow
 
@@ -30,6 +31,4 @@ interface UserDao {
 
     @Query("DELETE FROM User WHERE name = :name")
     suspend fun delete(name: String)
-
-
 }

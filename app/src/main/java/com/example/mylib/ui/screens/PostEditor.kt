@@ -311,11 +311,11 @@ fun PostEditorPreview(
     //onUploadPic: () -> Unit,
     //viewModel: PostEditorViewModel,
     post: PostResponse = PostResponse(
-        id=1,
+        id =1,
         username = "Bob",
         title = "Wow",
-        text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        time="10-10-25",
+        text ="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        time ="10-10-25",
         imageBase64 = null,
         imageType = null
     ),
@@ -460,7 +460,9 @@ fun PostEditorPreview(
                         .weight(1f),
                     value = newText,
                     onValueChange = { newText = it },
-                    placeholder = { if(!isNewPost) {Text(text = post.text)} else {Text(text = "Write your text here...")} },
+                    placeholder = { if(!isNewPost) {
+                        post.text?.let { Text(text = it) }
+                    } else {Text(text = "Write your text here...")} },
                 )
 
                 Row (

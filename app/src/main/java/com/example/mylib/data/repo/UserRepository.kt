@@ -1,5 +1,6 @@
 package com.example.mylib.data.repo
 
+import com.bumptech.glide.load.engine.Resource
 import com.example.mylib.data.models.DeleteAccountRequest
 import com.example.mylib.data.models.FollowRequest
 import com.example.mylib.data.models.FollowResponse
@@ -14,6 +15,7 @@ import com.example.mylib.data.repo.Dao.FollowingDao
 import com.example.mylib.data.repo.Dao.PostDao
 import com.example.mylib.data.repo.Dao.ReviewDao
 import com.example.mylib.data.repo.Dao.UserDao
+import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -41,7 +43,8 @@ class UserRepository(
                 title = it.title,
                 text = it.text,
                 time = it.time,
-                imagePath = path
+                imagePath = path,
+                imageType = it.imageType
             )
         })
         return response
@@ -97,7 +100,8 @@ class UserRepository(
                     title = it.title,
                     text = it.text,
                     time = it.time,
-                    imagePath = postPath
+                    imagePath = postPath,
+                    imageType = it.imageType,
                 )
             })
         }
@@ -211,4 +215,8 @@ class UserRepository(
     suspend fun deleteAccount(password: String) {
         userApi.deleteAccount(DeleteAccountRequest(password))
     }
+
+
+
+
 }

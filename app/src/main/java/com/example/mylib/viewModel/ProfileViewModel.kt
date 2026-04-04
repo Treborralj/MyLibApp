@@ -1,46 +1,46 @@
 package com.example.mylib.viewModel
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.MainActivity
 import com.example.mylib.MainActivity.Companion.loggedInUser
-import com.example.mylib.data.models.FollowRequest
 import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.data.models.PostResponse
 import com.example.mylib.data.models.ProfileResponse
 import com.example.mylib.data.models.ReviewResponse
+import com.example.mylib.data.repo.FollowingRepository
 import com.example.mylib.data.repo.PostRepository
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.UserRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
-import java.time.LocalDateTime
 
-data class ProfileUiState(
+
+data class ProfileUiState (
     val viewingReviews: Boolean = false,
     val viewingFollowers: Boolean = false,
     val viewingFollowing: Boolean = false,
+    val bio: String = "",
+    val profilePictureBase64: String? = null,
 
-    val loading: Boolean = false,
     val error: String = "",
-    val profileData: ProfileResponse? = null,
+    val loading: Boolean = false,
 
     val posts: List<PostReviewItem.PostItem> = emptyList(),
-    val postsError: String = "",
-    val loadingPosts: Boolean = false,
-
-    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
-    val reviewsError: String = "",
-    val loadingReviews: Boolean = false,
-
     val amFollowing: Boolean = false,
-    val followError: String = "",
-    val loadingFollow: Boolean = false,
+    val reviews: List<PostReviewItem.ReviewItem> = emptyList(),
+    val followers: List<FollowResponse> = emptyList(),
+    val following: List<FollowResponse> = emptyList(),
+
+    val profileData: ProfileResponse? = null,
 )
 
 
@@ -48,12 +48,148 @@ class ProfileViewModel(
     private val userRepository: UserRepository,
     private val postRepository: PostRepository,
     private val reviewRepository: ReviewRepository,
+    private val followingRepository: FollowingRepository,
 
 ) : ViewModel(){
 
     private val _uiState = MutableStateFlow(ProfileUiState())
-
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+
+
+    var postFlow: Flow<List<PostReviewItem.PostItem>> = flow { emit(List(1,{PostReviewItem.PostItem(
+        PostResponse(
+            id=-1,
+            username="",
+            title ="",
+            text ="",
+            time ="",
+            imageType = "png",
+            imageBase64 = null,
+        ))}))}
+    var reviewFlow: Flow<List<PostReviewItem.ReviewItem>> = flow { emit(List(1,{PostReviewItem.ReviewItem(
+        ReviewResponse(
+            id = -1,
+            username = "",
+            text = "",
+            time = "",
+            score = 0.0,
+            bookId = -1,
+        )
+    )}))}
+
+    var followerFlow: Flow<List<FollowResponse>> = flow { emit(List(1,{
+        FollowResponse(
+        username = ""
+    )}))}
+    var followingFlow: Flow<List<FollowResponse>> = flow { emit(List(1,{
+        FollowResponse(
+            username = ""
+        )}))}
+
+    var uiPostState: StateFlow<List<PostReviewItem.PostItem>> = postFlow.stateIn(
+        scope = viewModelScope,                      // where it lives
+        started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+        initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
+            id = -1,
+            username = "",
+            title="",text="",
+            time="",
+            imageBase64 = "",
+            imageType = ""
+        ))}  )
+    )
+    var uiReviewState: StateFlow<List<PostReviewItem.ReviewItem>> = reviewFlow.stateIn(
+        scope = viewModelScope,                      // where it lives
+        started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+        initialValue = List(1,{ PostReviewItem.ReviewItem(ReviewResponse(
+            id = -1,
+            username = "",
+            text = "",
+            time = "",
+            score = 0.0,
+            bookId = -1,
+        ))}  )
+    )
+
+    var uiFollowerState: StateFlow<List<FollowResponse>> = followerFlow.stateIn(
+        scope = viewModelScope,                      // where it lives
+        started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+        initialValue = List(1,{ FollowResponse(
+            username = ""
+        )}  )
+    )
+    var uiFollowingState: StateFlow<List<FollowResponse>> = followingFlow.stateIn(
+        scope = viewModelScope,                      // where it lives
+        started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+        initialValue = List(1,{ FollowResponse(
+            username = ""
+        )}  )
+    )
+
+    fun setUser(username: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                error = "",
+                loading = true,
+            )
+
+            postRepository.getAccountPosts(username)
+            postFlow = postRepository.observePostsByUsername(username)
+            uiPostState = postFlow.stateIn(
+            scope = viewModelScope,                      // where it lives
+            started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+            initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
+                id = -1,
+                username = "",
+                title="",text="",
+                time="",
+                imageBase64 = "",
+                imageType = ""
+            ))}  )
+            )
+
+            reviewRepository.fetchUserReviews(username)
+            reviewFlow = reviewRepository.observeReviewsByUsername(username)
+            uiReviewState = reviewFlow.stateIn(
+                scope = viewModelScope,                      // where it lives
+                started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+                initialValue = List(1,{ PostReviewItem.ReviewItem(ReviewResponse(
+                    id = -1,
+                    username = "",
+                    text = "",
+                    time = "",
+                    score = 0.0,
+                    bookId = -1,
+                ))}  )
+            )
+
+            userRepository.getFollowers(username)
+            followerFlow = followingRepository.observeFollowersByUsername(username)
+            uiFollowerState = followerFlow.stateIn(
+                scope = viewModelScope,                      // where it lives
+                started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+                initialValue = List(1,{ FollowResponse(
+                    username = ""
+                )}  )
+            )
+
+            userRepository.getFollowing(username)
+            followingFlow = followingRepository.observeFollowingByUsername(username)
+            uiFollowingState = followingFlow.stateIn(
+                scope = viewModelScope,                      // where it lives
+                started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+                initialValue = List(1,{ FollowResponse(
+                    username = ""
+                )}  )
+            )
+
+            _uiState.value = _uiState.value.copy(
+                error = "",
+                loading = false,
+            )
+        }
+    }
+
 
 
     fun setViewingFollowers(b: Boolean) {
@@ -80,18 +216,18 @@ class ProfileViewModel(
     fun follow(username: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(followError = "", loadingFollow = true)
+                _uiState.value = _uiState.value.copy(error = "", loading = true)
 
                 userRepository.followAccount(loggedInUser,username)
 
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
+                    loading = false,
                     amFollowing = true,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
-                    postsError = "Failed to follow account"
+                    loading = false,
+                    error = "Failed to follow account"
                 )
             }
         }
@@ -100,17 +236,17 @@ class ProfileViewModel(
     fun unfollow(username: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(followError = "", loadingFollow = true)
+                _uiState.value = _uiState.value.copy(error = "", loading = true)
 
                 userRepository.unfollowAccount(loggedInUser,username)
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
+                    loading = false,
                     amFollowing = false,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingFollow = false,
-                    postsError = "Failed to unfollow account"
+                    loading = false,
+                    error = "Failed to unfollow account"
                 )
             }
         }
@@ -120,16 +256,17 @@ class ProfileViewModel(
     fun fetchProfile(username: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(error = "", loading = true)
+                _uiState.value = _uiState.value.copy(
+                    error = "",
+                    loading = true,
+                )
 
-                var data = userRepository.getUserProfile(username);
 
-                if(data.bio == null) {
-                    data.bio = "No Bio"
-                }
+                val data = userRepository.getUserProfile(username);
 
                 _uiState.value = _uiState.value.copy(
                     profileData = data,
+                    bio = data.bio?:"No Bio"
                 )
 
                 var foundAmFollowing = false
@@ -166,19 +303,33 @@ class ProfileViewModel(
     fun fetchPosts(username: String, viewingReviews: Boolean = false) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(postsError = "", loadingPosts = true, viewingReviews = viewingReviews)
+                _uiState.value = _uiState.value.copy(error = "", loading = true, viewingReviews = viewingReviews)
 
                 val posts = postRepository.getAccountPosts(username);
                 val postsConverted = posts.map { PostReviewItem.PostItem(it) };
 
+                //postRepository.getAccountPosts(username)
+                postFlow = postRepository.observePostsByUsername(username)
+                uiPostState = postFlow.stateIn(
+                    scope = viewModelScope,                      // where it lives
+                    started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+                    initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
+                        id = -1,
+                        username = "",
+                        title="",text="",
+                        time="",
+                        imageBase64 = "",
+                        imageType = ""
+                    ))}  ))
+
                 _uiState.value = _uiState.value.copy(
-                    loadingPosts = false,
+                    loading = false,
                     posts = postsConverted,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingPosts = false,
-                    postsError = "Failed to load posts"
+                    loading = false,
+                    error = "Failed to load posts"
                 )
             }
         }
@@ -187,18 +338,33 @@ class ProfileViewModel(
     fun fetchReviews(username: String, viewingReviews: Boolean = true) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loadingReviews = true, reviewsError = "", viewingReviews = viewingReviews)
+                _uiState.value = _uiState.value.copy(loading = true, error = "", viewingReviews = viewingReviews)
 
                 val reviews = reviewRepository.fetchUserReviews(username);
 
+                //reviewRepository.fetchUserReviews(username)
+                reviewFlow = reviewRepository.observeReviewsByUsername(username)
+                uiReviewState = reviewFlow.stateIn(
+                    scope = viewModelScope,                      // where it lives
+                    started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+                    initialValue = List(1,{ PostReviewItem.ReviewItem(ReviewResponse(
+                        id = -1,
+                        username = "",
+                        text = "",
+                        time = "",
+                        score = 0.0,
+                        bookId = -1,
+                    ))}  )
+                )
+
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
+                    loading = false,
                     reviews = reviews.map { PostReviewItem.ReviewItem(it) },
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loadingReviews = false,
-                    reviewsError = "Failed to load reviews"
+                    loading = false,
+                    error = "Failed to load reviews"
                 )
             }
         }
