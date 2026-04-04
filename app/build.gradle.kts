@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     val room_version = "2.8.4"
     implementation("androidx.room:room-runtime:${room_version}")

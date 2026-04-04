@@ -18,8 +18,8 @@ class ImageStorageManager(private val context: Context) {
 
             //Determine extension
             val ext = when {
-                type.contains("png") -> "png"
-                type.contains("webp") -> "webp"
+                type.contains("png", ignoreCase = true) -> "png"
+                type.contains("webp", ignoreCase = true) -> "webp"
                 else -> "jpg"
             }
 
@@ -46,6 +46,18 @@ class ImageStorageManager(private val context: Context) {
             File(path).delete()
         } catch (e: Exception) {
             false
+        }
+    }
+
+    fun saveImage(file: File): String? {
+        return try {
+            if (!imageDir.exists()) imageDir.mkdirs()
+            val newFile = File(imageDir, "profile_${System.currentTimeMillis()}_${file.name}")
+            file.copyTo(newFile, overwrite = true)
+            newFile.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

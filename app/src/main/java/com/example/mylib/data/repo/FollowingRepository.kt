@@ -42,7 +42,7 @@ class FollowingRepository(
             )
         }
 
-        followingDao.clearAndInsert(loggedinUser, followingEntities)
+        followingDao.clearFollowingAndInsert(loggedinUser, followingEntities)
     }
 
 
