@@ -130,16 +130,33 @@ fun PostFrame(
                         }
                     }
 
-                    Text(
-                        modifier = Modifier
-                            .weight(1f)
-                        ,
-                        text = username,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Start
-                    )
+                    when (content) {
+                        is PostReviewItem.PostItem -> {
+                            Text(
+                                modifier = Modifier
+                                    .weight(1f)
+                                ,
+                                text = content.post.username,
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Start
+                            )
+                        }
+                        is PostReviewItem.ReviewItem -> {
+                            Text(
+                                modifier = Modifier
+                                    .weight(1f)
+                                ,
+                                text = username,
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Start
+                            )
+                        }
+                    }
+
                 }
 
                 when (content) {

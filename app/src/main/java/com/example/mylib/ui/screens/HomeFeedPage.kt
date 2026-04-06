@@ -33,6 +33,7 @@ fun HomeFeedPage(
     ){
     // Observe state
     val uiState by viewModel.uiState.collectAsState()
+    val posts by viewModel.uiPostState.collectAsState()
     LaunchedEffect(key1 = MainActivity.bearerToken) {
         viewModel.fetchFeed()
     }
@@ -46,23 +47,23 @@ fun HomeFeedPage(
             uiState.loading -> {
                 Text("Loading posts...")
             }
-            !uiState.posts.isEmpty() -> {
+            !posts.isEmpty() -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(30.dp)
                 ){
                     items(
-                        uiState.posts,
+                        posts,
                     ){ item ->
-
-                        PostFrame("Sample User", "post title", content = item,
-                            onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
-                        )
-
+                        if (!item.post.username.isEmpty()) {
+                            PostFrame("Sample User", "post title", content = item,
+                                onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
+                            )
+                        }
                     }
                 }
             }
-            uiState.posts.isEmpty() -> {
+            posts.isEmpty() -> {
                 Text("No new posts found")
             }
         }

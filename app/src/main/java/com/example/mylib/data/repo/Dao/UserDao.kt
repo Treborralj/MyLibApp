@@ -31,4 +31,7 @@ interface UserDao {
 
     @Query("DELETE FROM User WHERE name = :name")
     suspend fun delete(name: String)
+
+    @Query("SELECT * FROM Post WHERE username IN (:following)")
+    fun observeFeed(following: List<String>): Flow<List<Post>>
 }

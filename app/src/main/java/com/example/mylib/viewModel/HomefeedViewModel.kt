@@ -9,10 +9,14 @@ import com.example.mylib.data.models.UserResponse
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.UserRepository
 import com.example.mylib.viewModel.search.SearchItem
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.collections.map
 
@@ -36,23 +40,69 @@ class HomefeedViewModel(
 
     val uiState: StateFlow<HomefeedUiState> = _uiState.asStateFlow()
 
+    var postFlow: Flow<List<PostReviewItem.PostItem>> = flow { emit(List(1,{PostReviewItem.PostItem(
+        PostResponse(
+            id=-1,
+            username="",
+            title ="",
+            text ="",
+            time ="",
+            imageType = "png",
+            imageBase64 = null,
+            profilePic = null,
+        ))}))}
+
+    var uiPostState: StateFlow<List<PostReviewItem.PostItem>> = postFlow.stateIn(
+        scope = viewModelScope,                      // where it lives
+        started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+        initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
+            id = -1,
+            username = "",
+            title="",text="",
+            time="",
+            imageBase64 = "",
+            imageType = "",
+            profilePic = null,
+        ))}  )
+    )
+
     fun fetchFeed() {
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(loading = true, error = null)
 
-                val posts = repository.fetchFeed()
-                if (posts.isEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        loading = false,
-                    )
-                    return@launch
+
+                postFlow = repository.fetchFeed()
+                uiPostState = postFlow.map{ it.reversed().map{
+                    PostReviewItem.PostItem(PostResponse(
+                        id=it.post.id,
+                        username = it.post.username,
+                        title = it.post.title,
+                        text = it.post.text,
+                        time = it.post.time,
+                        imageBase64 = it.post.imageBase64,
+                        imageType = it.post.imageType,
+                        profilePic = repository.getProfilePicBase64(it.post.username)
+                    ))
                 }
+                }.stateIn(
+                    scope = viewModelScope,                      // where it lives
+                    started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+                    initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
+                        id = -1,
+                        username = "",
+                        title="",text="",
+                        time="",
+                        imageBase64 = "",
+                        imageType = "",
+                        profilePic = "",
+                    ))}  )
+                )
 
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     //posts = posts.map { PostReviewItem.PostItem(it) }
-                    posts = posts
+                   // posts = posts
                 )
             } catch (e: Exception) {
                 println("Failed to load posts")

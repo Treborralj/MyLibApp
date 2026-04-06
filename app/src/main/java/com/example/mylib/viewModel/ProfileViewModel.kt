@@ -148,7 +148,7 @@ class ProfileViewModel(
                     time = it.post.time,
                     imageBase64 = it.post.imageBase64,
                     imageType = it.post.imageType,
-                    profilePic = userRepository.getProfilePicture(it.post.username)
+                    profilePic = userRepository.getProfilePicBase64(it.post.username)
                 ))
             }
             }.stateIn(
@@ -175,7 +175,7 @@ class ProfileViewModel(
                     text = it.review.text,
                     time = it.review.time,
                     score = it.review.score,
-                    profilePic = userRepository.getProfilePicture(username),
+                    profilePic = userRepository.getProfilePicBase64(username)
                 ))
             }
             }.stateIn(

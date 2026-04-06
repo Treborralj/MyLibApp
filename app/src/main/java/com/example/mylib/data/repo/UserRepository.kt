@@ -1,6 +1,7 @@
 package com.example.mylib.data.repo
 
 import com.bumptech.glide.load.engine.Resource
+import com.example.mylib.MainActivity
 import com.example.mylib.data.models.DeleteAccountRequest
 import com.example.mylib.data.models.FollowRequest
 import com.example.mylib.data.models.FollowResponse
@@ -16,7 +17,9 @@ import com.example.mylib.data.repo.Dao.PostDao
 import com.example.mylib.data.repo.Dao.ReviewDao
 import com.example.mylib.data.repo.Dao.UserDao
 import com.example.mylib.viewModel.PostReviewItem
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -31,8 +34,9 @@ class UserRepository(
     private val reviewDao: ReviewDao,
     private val imageStorage: ImageStorageManager
 ) {
-    suspend fun fetchFeed(): List<PostReviewItem.PostItem>{
+    suspend fun fetchFeed(): Flow<List<PostReviewItem.PostItem>> {
         val response = userApi.fetchFeed()
+        val following = getFollowing(MainActivity.loggedInUser).map{ it.username }
 
         postDao.insertAll(response.map {
             var path: String? = null
@@ -49,19 +53,21 @@ class UserRepository(
                 imageType = it.imageType
             )
         })
-        return response.map{
+        return userDao.observeFeed(following).map{ list ->
+            list.map{
+            getProfilePicture(it.username)
             PostReviewItem.PostItem(PostResponse(
                 id=it.id,
                 username = it.username,
                 title = it.title,
                 text = it.text,
                 time = it.time,
-                imageBase64 = it.imageBase64,
+                imageBase64 = imageStorage.getFile(it.imagePath)?.readBytes()?.let { source -> Base64.encode(source) },
                 imageType = it.imageType,
-                profilePic = imageStorage.getFile(getProfilePicture(it.username))?.readBytes()?.let { source -> Base64.encode(source) },
-
+                profilePic =  getProfilePicBase64(it.username)
             ))
-        }
+        } }
+
     }
 
     suspend fun updateAccount(username: String?, bio: String?): UpdateAccountResponse {
@@ -202,6 +208,7 @@ class UserRepository(
     }
 
     suspend fun getProfilePicture(username: String): String? {
+        getUserProfile(username)
         val response = userApi.getProfilePicture(username)
         val type = response.type ?: "jpg"
         val path = imageStorage.saveBase64Image(response.imageBase64, type, username)
