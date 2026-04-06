@@ -78,7 +78,7 @@ fun AppNavigation(){
     val currentRoute = navigationBackStackEntry?.destination?.route
 
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
-    val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
+    val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao(),db.userDao(),imageStorageManager)
     val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
     val listFactory = ListViewModelFactory(listRepository)
     val listViewModel: ListViewModel = viewModel(factory = listFactory)
@@ -86,7 +86,7 @@ fun AppNavigation(){
 
     val followingRepository =
         FollowingRepository(followingDao = db.followingDao(), RetrofitClient.userApi)
-    val postRepository = PostRepository(RetrofitClient.postApi, context, db.postDao(),imageStorageManager)
+    val postRepository = PostRepository(RetrofitClient.postApi, context, db.postDao(), db.userDao(),imageStorageManager)
     val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository,followingRepository)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 
@@ -219,7 +219,8 @@ fun AppNavigation(){
                     text = text,
                     time = time,
                     imageBase64 = imageBase64,
-                    imageType = imageType
+                    imageType = imageType,
+                    profilePic = null,
                 )
 
                 val postEditorViewModel: PostEditorViewModel = viewModel(factory = postEditorFactory)
@@ -246,6 +247,7 @@ fun AppNavigation(){
                         score = score,
                         bookId = bookId,
                         username=username,
+                        profilePic = null,
                     )
                 } else {
                     null

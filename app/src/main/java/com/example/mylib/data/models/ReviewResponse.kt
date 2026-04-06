@@ -7,4 +7,5 @@ data class ReviewResponse(
     val score: Double,
     val bookId: Int,
     val username: String,
+    val profilePic: String?,
 )

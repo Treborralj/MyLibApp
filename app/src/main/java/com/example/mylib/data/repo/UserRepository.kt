@@ -15,11 +15,13 @@ import com.example.mylib.data.repo.Dao.FollowingDao
 import com.example.mylib.data.repo.Dao.PostDao
 import com.example.mylib.data.repo.Dao.ReviewDao
 import com.example.mylib.data.repo.Dao.UserDao
+import com.example.mylib.viewModel.PostReviewItem
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import kotlin.io.encoding.Base64
 
 class UserRepository(
     private val userApi: UserApi,
@@ -29,7 +31,7 @@ class UserRepository(
     private val reviewDao: ReviewDao,
     private val imageStorage: ImageStorageManager
 ) {
-    suspend fun fetchFeed(): List<PostResponse>{
+    suspend fun fetchFeed(): List<PostReviewItem.PostItem>{
         val response = userApi.fetchFeed()
 
         postDao.insertAll(response.map {
@@ -47,7 +49,19 @@ class UserRepository(
                 imageType = it.imageType
             )
         })
-        return response
+        return response.map{
+            PostReviewItem.PostItem(PostResponse(
+                id=it.id,
+                username = it.username,
+                title = it.title,
+                text = it.text,
+                time = it.time,
+                imageBase64 = it.imageBase64,
+                imageType = it.imageType,
+                profilePic = imageStorage.getFile(getProfilePicture(it.username))?.readBytes()?.let { source -> Base64.encode(source) },
+
+            ))
+        }
     }
 
     suspend fun updateAccount(username: String?, bio: String?): UpdateAccountResponse {
@@ -193,6 +207,10 @@ class UserRepository(
         val path = imageStorage.saveBase64Image(response.imageBase64, type, username)
         userDao.updateImage(username, path)
         return userDao.getImagePath(username)
+    }
+
+    suspend fun getProfilePicBase64(username: String):String? {
+        return imageStorage.getFile(userDao.getImagePath(username))?.readBytes()?.let { source -> Base64.encode(source) }
     }
 
     suspend fun updateProfilePicture(username: String, file: File): ProfilePictureResponse {

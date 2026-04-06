@@ -69,7 +69,7 @@ fun ProfilePosts(
 
     ){
         when {
-            uiState.posts.isEmpty() && !uiState.loading -> {
+            posts.isEmpty() && !uiState.loading -> {
                 Text("This account has no posts yet")
             }
 

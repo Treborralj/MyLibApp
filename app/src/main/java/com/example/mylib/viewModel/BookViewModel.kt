@@ -136,7 +136,8 @@ fun Review.toReviewResponse(): ReviewResponse {
         text = text ?: "",
         score = score,
         time = time ?: "",
-        username = username
+        username = username,
+        profilePic = null,
     )
 }
 fun Book.toBookResponse(): BookResponse {

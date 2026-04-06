@@ -65,6 +65,7 @@ class ProfileViewModel(
             time ="",
             imageType = "png",
             imageBase64 = null,
+            profilePic = null,
         ))}))}
     var reviewFlow: Flow<List<PostReviewItem.ReviewItem>> = flow { emit(List(1,{PostReviewItem.ReviewItem(
         ReviewResponse(
@@ -74,6 +75,7 @@ class ProfileViewModel(
             time = "",
             score = 0.0,
             bookId = -1,
+            profilePic = null,
         )
     )}))}
 
@@ -95,7 +97,8 @@ class ProfileViewModel(
             title="",text="",
             time="",
             imageBase64 = "",
-            imageType = ""
+            imageType = "",
+            profilePic = null,
         ))}  )
     )
     var uiReviewState: StateFlow<List<PostReviewItem.ReviewItem>> = reviewFlow.stateIn(
@@ -108,6 +111,7 @@ class ProfileViewModel(
             time = "",
             score = 0.0,
             bookId = -1,
+            profilePic = null,
         ))}  )
     )
 
@@ -135,31 +139,56 @@ class ProfileViewModel(
 
             postRepository.getAccountPosts(username)
             postFlow = postRepository.observePostsByUsername(username)
-            uiPostState = postFlow.stateIn(
-            scope = viewModelScope,                      // where it lives
-            started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
-            initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
-                id = -1,
-                username = "",
-                title="",text="",
-                time="",
-                imageBase64 = "",
-                imageType = ""
-            ))}  )
+            uiPostState = postFlow.map{ it.map{
+                PostReviewItem.PostItem(PostResponse(
+                    id=it.post.id,
+                    username = it.post.username,
+                    title = it.post.title,
+                    text = it.post.text,
+                    time = it.post.time,
+                    imageBase64 = it.post.imageBase64,
+                    imageType = it.post.imageType,
+                    profilePic = userRepository.getProfilePicture(it.post.username)
+                ))
+            }
+            }.stateIn(
+                scope = viewModelScope,                      // where it lives
+                started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
+                initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
+                    id = -1,
+                    username = "",
+                    title="",text="",
+                    time="",
+                    imageBase64 = "",
+                    imageType = "",
+                    profilePic = "",
+                ))}  )
             )
 
             reviewRepository.fetchUserReviews(username)
             reviewFlow = reviewRepository.observeReviewsByUsername(username)
-            uiReviewState = reviewFlow.stateIn(
+            uiReviewState = reviewFlow.map{ it.map{
+                PostReviewItem.ReviewItem(ReviewResponse(
+                    id =it.review.id,
+                    username = username,
+                    bookId = it.review.bookId,
+                    text = it.review.text,
+                    time = it.review.time,
+                    score = it.review.score,
+                    profilePic = userRepository.getProfilePicture(username),
+                ))
+            }
+            }.stateIn(
                 scope = viewModelScope,                      // where it lives
                 started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
                 initialValue = List(1,{ PostReviewItem.ReviewItem(ReviewResponse(
                     id = -1,
                     username = "",
                     text = "",
-                    time = "",
+                    time = null,
                     score = 0.0,
                     bookId = -1,
+                    profilePic = "",
                 ))}  )
             )
 
@@ -280,12 +309,12 @@ class ProfileViewModel(
                     amFollowing = foundAmFollowing
                 )
 
-                val postsConverted = data.posts?.map { PostReviewItem.PostItem(it) } ?: emptyList()
-                val reviewsConverted = data.reviews?.map { PostReviewItem.ReviewItem(it) } ?: emptyList()
+               // val postsConverted = data.posts?.map { PostReviewItem.PostItem(it) } ?: emptyList()
+               // val reviewsConverted = data.reviews?.map { PostReviewItem.ReviewItem(it) } ?: emptyList()
 
                 _uiState.value = _uiState.value.copy(
-                    posts = postsConverted,
-                    reviews = reviewsConverted,
+                   // posts = postsConverted,
+                  //  reviews = reviewsConverted,
                     loading = false,
                 )
 
@@ -305,12 +334,21 @@ class ProfileViewModel(
             try {
                 _uiState.value = _uiState.value.copy(error = "", loading = true, viewingReviews = viewingReviews)
 
-                val posts = postRepository.getAccountPosts(username);
-                val postsConverted = posts.map { PostReviewItem.PostItem(it) };
-
-                //postRepository.getAccountPosts(username)
+                postRepository.getAccountPosts(username)
                 postFlow = postRepository.observePostsByUsername(username)
-                uiPostState = postFlow.stateIn(
+                uiPostState = postFlow.map{ it.map{
+                    PostReviewItem.PostItem(PostResponse(
+                        id=it.post.id,
+                        username = it.post.username,
+                        title = it.post.title,
+                        text = it.post.text,
+                        time = it.post.time,
+                        imageBase64 = it.post.imageBase64,
+                        imageType = it.post.imageType,
+                        profilePic = userRepository.getProfilePicBase64(it.post.username)
+                    ))
+                }
+                }.stateIn(
                     scope = viewModelScope,                      // where it lives
                     started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
                     initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(
@@ -319,12 +357,14 @@ class ProfileViewModel(
                         title="",text="",
                         time="",
                         imageBase64 = "",
-                        imageType = ""
-                    ))}  ))
+                        imageType = "",
+                        profilePic = "",
+                    ))}  )
+                )
 
                 _uiState.value = _uiState.value.copy(
                     loading = false,
-                    posts = postsConverted,
+                   // posts = postsConverted,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -340,26 +380,36 @@ class ProfileViewModel(
             try {
                 _uiState.value = _uiState.value.copy(loading = true, error = "", viewingReviews = viewingReviews)
 
-                val reviews = reviewRepository.fetchUserReviews(username);
-
-                //reviewRepository.fetchUserReviews(username)
+                reviewRepository.fetchUserReviews(username)
                 reviewFlow = reviewRepository.observeReviewsByUsername(username)
-                uiReviewState = reviewFlow.stateIn(
+                uiReviewState = reviewFlow.map{ it.map{
+                    PostReviewItem.ReviewItem(ReviewResponse(
+                        id =it.review.id,
+                        username = username,
+                        bookId = it.review.bookId,
+                        text = it.review.text,
+                        time = it.review.time,
+                        score = it.review.score,
+                        profilePic = userRepository.getProfilePicBase64(username)
+                    ))
+                }
+                }.stateIn(
                     scope = viewModelScope,                      // where it lives
                     started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
                     initialValue = List(1,{ PostReviewItem.ReviewItem(ReviewResponse(
                         id = -1,
                         username = "",
                         text = "",
-                        time = "",
+                        time = null,
                         score = 0.0,
                         bookId = -1,
+                        profilePic = "",
                     ))}  )
                 )
 
                 _uiState.value = _uiState.value.copy(
                     loading = false,
-                    reviews = reviews.map { PostReviewItem.ReviewItem(it) },
+                    //reviews = reviews.map { PostReviewItem.ReviewItem(it) },
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(

@@ -15,6 +15,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 import com.example.mylib.data.repo.Dao.PostDao
+import com.example.mylib.data.repo.Dao.UserDao
 import com.example.mylib.viewModel.PostReviewItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -25,6 +26,7 @@ class PostRepository(
     private val api: PostApi,
     private val context: Context,
     private val postDao: PostDao,
+    private val userDao: UserDao,
     private val imageStorage: ImageStorageManager
 ) {
 
@@ -88,7 +90,8 @@ class PostRepository(
                     text =post.text,
                     time =post.time,
                     imageType = post.imageType,
-                    imageBase64 = imageStorage.getFile(post.imagePath)?.readBytes()?.let { source -> Base64.encode(source) }
+                    imageBase64 = imageStorage.getFile(post.imagePath)?.readBytes()?.let { source -> Base64.encode(source) },
+                    profilePic = imageStorage.getFile(userDao.getImagePath(username))?.readBytes()?.let { source -> Base64.encode(source) },
                 ))} }
     }
 }

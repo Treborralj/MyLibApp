@@ -87,7 +87,8 @@ fun PostCardPreview(
         text ="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
         time = "2026-02-25T15:58:58.107948",
         imageBase64 = null,
-        imageType = null
+        imageType = null,
+        profilePic = null,
     ),
     postTitle: String = "Sample Post"
 )

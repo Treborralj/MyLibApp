@@ -12,7 +12,9 @@ import com.example.mylib.viewModel.search.SearchItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlin.collections.map
 
 data class HomefeedUiState(
     val loading: Boolean = false,
@@ -49,7 +51,8 @@ class HomefeedViewModel(
 
                 _uiState.value = _uiState.value.copy(
                     loading = false,
-                    posts = posts.map { PostReviewItem.PostItem(it) }
+                    //posts = posts.map { PostReviewItem.PostItem(it) }
+                    posts = posts
                 )
             } catch (e: Exception) {
                 println("Failed to load posts")

@@ -27,6 +27,7 @@ fun ReviewCardPreview(
         score =3.5,
         bookId = 1,
         username="Sample User",
+        profilePic = null,
     ),
     bookTitle: String = "Sample Book"
 )

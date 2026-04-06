@@ -6,14 +6,18 @@ import com.example.mylib.data.models.ReviewUpdateRequest
 import com.example.mylib.data.remote.ReviewApi
 import com.example.mylib.data.repo.Dao.BookDao
 import com.example.mylib.data.repo.Dao.ReviewDao
+import com.example.mylib.data.repo.Dao.UserDao
 import com.example.mylib.viewModel.PostReviewItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlin.io.encoding.Base64
 
 class ReviewRepository(
     private val api: ReviewApi,
     private val reviewDao: ReviewDao,
-    private val bookDao: BookDao
+    private val bookDao: BookDao,
+    private val userDao: UserDao,
+    private val imageStorage: ImageStorageManager,
 ) {
 
     fun observeBookReviews(bookId: Int): Flow<List<Review>> {
@@ -116,6 +120,7 @@ class ReviewRepository(
                     time =review.time,
                     score = review.score,
                     bookId = review.bookId,
+                    profilePic = imageStorage.getFile(userDao.getImagePath(username))?.readBytes()?.let { source -> Base64.encode(source) },
                 ))} }
     }
 }

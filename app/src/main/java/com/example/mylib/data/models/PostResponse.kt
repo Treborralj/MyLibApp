@@ -7,6 +7,6 @@ data class PostResponse (
     val text: String?,
     val time: String?,
     val imageBase64: String?,
-    val imageType: String?
-
+    val imageType: String?,
+    val profilePic: String?,
 )
