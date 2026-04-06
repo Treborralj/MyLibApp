@@ -33,6 +33,7 @@ data class ProfileUiState (
 
     val error: String = "",
     val loading: Boolean = false,
+    val loadingBody: Boolean = false,
 
     val posts: List<PostReviewItem.PostItem> = emptyList(),
     val amFollowing: Boolean = false,
@@ -332,7 +333,11 @@ class ProfileViewModel(
     fun fetchPosts(username: String, viewingReviews: Boolean = false) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(error = "", loading = true, viewingReviews = viewingReviews)
+                _uiState.value = _uiState.value.copy(
+                    error = "",
+                    viewingReviews = viewingReviews,
+                    loadingBody = true,
+                )
 
                 postRepository.getAccountPosts(username)
                 postFlow = postRepository.observePostsByUsername(username)
@@ -363,12 +368,12 @@ class ProfileViewModel(
                 )
 
                 _uiState.value = _uiState.value.copy(
-                    loading = false,
+                    loadingBody = false,
                    // posts = postsConverted,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loading = false,
+                    loadingBody = false,
                     error = "Failed to load posts"
                 )
             }
@@ -378,7 +383,7 @@ class ProfileViewModel(
     fun fetchReviews(username: String, viewingReviews: Boolean = true) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loading = true, error = "", viewingReviews = viewingReviews)
+                _uiState.value = _uiState.value.copy(loadingBody = true, error = "", viewingReviews = viewingReviews)
 
                 reviewRepository.fetchUserReviews(username)
                 reviewFlow = reviewRepository.observeReviewsByUsername(username)
@@ -408,12 +413,12 @@ class ProfileViewModel(
                 )
 
                 _uiState.value = _uiState.value.copy(
-                    loading = false,
+                    loadingBody = false,
                     //reviews = reviews.map { PostReviewItem.ReviewItem(it) },
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    loading = false,
+                    loadingBody = false,
                     error = "Failed to load reviews"
                 )
             }

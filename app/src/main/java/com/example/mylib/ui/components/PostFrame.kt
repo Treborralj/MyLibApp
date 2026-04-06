@@ -99,11 +99,17 @@ fun PostFrame(
                     .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                var name: String
+                if (content is PostReviewItem.PostItem) {
+                    name = content.post.username
+                } else {
+                    name = username
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .clickable(onClick = { onClickUser(username) }),
+                        .clickable(onClick = { onClickUser(name) }),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (bitmap == null) {

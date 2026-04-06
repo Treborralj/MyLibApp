@@ -72,20 +72,8 @@ class HomefeedViewModel(
                 _uiState.value = _uiState.value.copy(loading = true, error = null)
 
 
-                postFlow = repository.fetchFeed()
-                uiPostState = postFlow.map{ it.reversed().map{
-                    PostReviewItem.PostItem(PostResponse(
-                        id=it.post.id,
-                        username = it.post.username,
-                        title = it.post.title,
-                        text = it.post.text,
-                        time = it.post.time,
-                        imageBase64 = it.post.imageBase64,
-                        imageType = it.post.imageType,
-                        profilePic = repository.getProfilePicBase64(it.post.username)
-                    ))
-                }
-                }.stateIn(
+                postFlow = repository.fetchFeed().map{ it.reversed() }
+                uiPostState = postFlow.stateIn(
                     scope = viewModelScope,                      // where it lives
                     started = SharingStarted.Eagerly,//SharingStarted.WhileSubscribed(5_000), // keep alive 5 s after last collector
                     initialValue = List(1,{ PostReviewItem.PostItem(PostResponse(

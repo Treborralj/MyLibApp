@@ -34,6 +34,7 @@ class UserRepository(
     private val reviewDao: ReviewDao,
     private val imageStorage: ImageStorageManager
 ) {
+
     suspend fun fetchFeed(): Flow<List<PostReviewItem.PostItem>> {
         val response = userApi.fetchFeed()
         val following = getFollowing(MainActivity.loggedInUser).map{ it.username }
@@ -208,7 +209,10 @@ class UserRepository(
     }
 
     suspend fun getProfilePicture(username: String): String? {
-        getUserProfile(username)
+        val exists = userDao.getImagePath(username)
+        if (exists == null) {
+            getUserProfile(username)
+        }
         val response = userApi.getProfilePicture(username)
         val type = response.type ?: "jpg"
         val path = imageStorage.saveBase64Image(response.imageBase64, type, username)

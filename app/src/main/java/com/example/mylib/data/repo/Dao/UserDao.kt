@@ -34,4 +34,5 @@ interface UserDao {
 
     @Query("SELECT * FROM Post WHERE username IN (:following)")
     fun observeFeed(following: List<String>): Flow<List<Post>>
+
 }

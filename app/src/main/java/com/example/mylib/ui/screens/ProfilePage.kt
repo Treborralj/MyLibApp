@@ -118,6 +118,30 @@ fun ProfilePage(
 
 
         when {
+
+            uiState.loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                        .background(color = Color(0xFFFDF8F8)),
+                    contentAlignment = Alignment.Center
+                ){
+                    CircularProgressIndicator()
+                }
+            }
+
+            uiState.profileData == null -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Profile not found",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
             uiState.viewingFollowers -> {
                 FollowList(viewModel,"FOLLOWERS",
                     onClickUser = { u ->
@@ -175,10 +199,6 @@ fun ProfilePage(
 
                             ) {
 
-                                when {
-                                    uiState.profileData == null || uiState.loading -> {}
-
-                                    true -> {
                                         Row(
                                             modifier = Modifier.fillMaxWidth()
                                                 .padding(vertical = 10.dp),
@@ -242,24 +262,14 @@ fun ProfilePage(
                                         }
 
                                         when {
-                                            uiState.loading -> {
-                                                CircularProgressIndicator()
-                                            }
 
-                                            uiState.profileData == null -> {
-
-                                            }
-
-                                            !uiState.error.isEmpty() -> {
+                                            uiState.loadingBody -> {
                                                 Box(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth(),
-                                                    contentAlignment = Alignment.Center,
-                                                ) {
-                                                    Text(
-                                                        text = uiState.error,
-                                                        color = MaterialTheme.colorScheme.error
-                                                    )
+                                                    modifier = Modifier.fillMaxSize()
+                                                        .background(color = Color(0xFFFDF8F8)),
+                                                    contentAlignment = Alignment.Center
+                                                ){
+                                                    CircularProgressIndicator()
                                                 }
                                             }
 
@@ -283,8 +293,8 @@ fun ProfilePage(
                                                 }
                                             }
                                         }
-                                    }
-                                }
+
+
 
 
                         }
