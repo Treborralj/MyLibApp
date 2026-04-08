@@ -237,7 +237,10 @@ fun AppNavigation(){
                         text = text,
                         time = time,
                         score = score,
-                        bookId = bookId
+                        bookId = bookId,
+                        username = "placeholder",
+                        bookTitle = "placeholder",
+                        accountId = 0
                     )
                 } else {
                     null

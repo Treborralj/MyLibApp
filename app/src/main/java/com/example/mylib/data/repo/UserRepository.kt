@@ -107,6 +107,7 @@ class UserRepository(
                 Review(
                     id = it.id,
                     bookId = it.bookId,
+                    bookName = it.bookTitle,
                     username = it.username ?: response.username,
                     text = it.text,
                     score = it.score,

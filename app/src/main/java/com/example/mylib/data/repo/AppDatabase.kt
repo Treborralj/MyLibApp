@@ -29,7 +29,7 @@ import java.sql.Blob
         BookList::class,
         BookListCrossRef::class
     ],
-    version = 11
+    version = 12
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -93,8 +93,9 @@ data class Book(
 @Entity
 data class Review(
     @PrimaryKey val id: Int,
-    val bookId: Int,
+    val bookName: String,
     val username: String,
+    val bookId: Int,
     val text: String?,
     val score: Double,
     val time: String?

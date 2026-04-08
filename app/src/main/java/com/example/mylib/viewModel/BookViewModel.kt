@@ -137,7 +137,10 @@ fun Review.toReviewResponse(): ReviewResponse {
         bookId = bookId,
         text = text ?: "",
         score = score,
-        time = time ?: ""
+        time = time ?: "",
+        username = username,
+        bookTitle = "",
+        accountId = 0
     )
 }
 fun Book.toBookResponse(): BookResponse {

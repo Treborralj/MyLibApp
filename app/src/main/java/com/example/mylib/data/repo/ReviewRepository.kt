@@ -26,6 +26,7 @@ class ReviewRepository(
                 Review(
                     id = it.id,
                     bookId = bookId,
+                    bookName = it.bookTitle,
                     username = it.username ?: "placeholder",
                     text = it.text,
                     score = it.score,
@@ -60,6 +61,7 @@ class ReviewRepository(
             Review(
                 id = response.id,
                 bookId = bookId,
+                bookName = response.bookTitle,
                 username = response.username ?: "placeholder",
                 text = response.text,
                 score = response.score,
@@ -82,6 +84,7 @@ class ReviewRepository(
         val updatedReview = Review(
             id = response.id,
             bookId = response.bookId,
+            bookName = response.bookTitle,
             username = response.username ?: "placeholder",
             text = response.text,
             score = response.score,
