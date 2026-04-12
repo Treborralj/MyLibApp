@@ -50,7 +50,9 @@ fun HomeFeedPage(
                         uiState.posts,
                     ){ item ->
 
-                        PostFrame("Sample User", "post title", content = PostReviewItem.PostItem(item.post),
+                        PostFrame(
+                            username = item.post.username,
+                            content = item,
                             onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
                         )
 

@@ -139,7 +139,7 @@ fun Review.toReviewResponse(): ReviewResponse {
         score = score,
         time = time ?: "",
         username = username,
-        bookTitle = "",
+        bookTitle = bookName,
         accountId = 0
     )
 }

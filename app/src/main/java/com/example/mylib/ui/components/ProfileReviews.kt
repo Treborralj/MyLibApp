@@ -81,31 +81,20 @@ fun ProfileReviews(
                     ) { item ->
                             Column(){
                                 PostFrame(
-                                    username,
-                                    "Book Title",
-                                    content = PostReviewItem.ReviewItem(item.review),
+                                    username = item.review.username,
+                                    content = item,
                                     onEdit = {
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time)
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewScore", item.review.score)
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookId", item.review.bookId)
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookTitle", item.review.bookTitle)
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("reviewUsername", item.review.username)
                                         navController.navigate(Routes.ReviewEditor.route)
                                     },
                                     onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
                                 )
-                                /**
-                                Button(onClick = {
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewTime", item.review.time)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewScore", item.review.score)
-                                    navController.currentBackStackEntry?.savedStateHandle?.set("reviewBookId", item.review.bookId)
-                                    navController.navigate(Routes.ReviewEditor.route)
-                                }) {
-                                    Text("Edit")
-                                }
-                                */
                             }
 
                     }
@@ -125,41 +114,25 @@ fun ProfileReviews(
 @Preview
 @Composable
 fun ProfileReviewsPreview(
-    //viewModel: ProfileViewModel,
-   // navController: NavController,
     username:String =  "Sample User",
     reviewsError:String = "",
     loadingReviews:Boolean = false,
-    reviews: List<ReviewResponse> = List(10,
+    reviews: List<PostReviewItem.ReviewItem> = List(10,
         {
-            ReviewResponse(
+            PostReviewItem.ReviewItem(ReviewResponse(
                 it,
                 text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                "10-10-25",
+                "2026-02-25T15:58:58.107948",
                 3.5,
                 it,
-                username = "placeholder",
+                username = "sampleuser",
                 bookId = 0,
-                bookTitle = "placeholder"
-            )
+                bookTitle = "Sample Book"
+            ))
         }),
     ownProfile:Boolean = false,
 
 ) {
-   // val uiState by viewModel.uiState.collectAsState();
-
-   // val refreshReviews =
-    //    navController.currentBackStackEntry
-     //       ?.savedStateHandle
-      //      ?.getStateFlow("refreshReviews", false)
-       //     ?.collectAsState()
-
- //   LaunchedEffect(refreshReviews?.value) {
-   //     if (refreshReviews?.value == true) {
-      //      viewModel.fetchReviews(username)
-    //        navController.currentBackStackEntry?.savedStateHandle?.set("refreshReviews", false)
-     //   }
-  //  }
 
     Card(
         modifier = Modifier.fillMaxSize()
@@ -187,12 +160,13 @@ fun ProfileReviewsPreview(
                     ,
                     verticalArrangement = Arrangement.spacedBy(30.dp)
                 ){
-                    items<ReviewResponse>(
+                    items(
                         items = reviews
                     ) { item ->
                             Column(){
                                 PostFramePreview(
-
+                                    username = item.review.username,
+                                    review = item.review
                                 )
                             }
 

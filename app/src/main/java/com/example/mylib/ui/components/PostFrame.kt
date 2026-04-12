@@ -49,8 +49,6 @@ import com.example.mylib.viewModel.search.SearchItem
 @Composable
 fun PostFramePreview(
     username: String = "sampleuser",
-    bookTitle: String = "Sample Book",
-    //profilePic:
     review: ReviewResponse = ReviewResponse(
         id = 0,
         text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
@@ -58,8 +56,8 @@ fun PostFramePreview(
         score = 3.5,
         bookId = 1,
         accountId = 0,
-        username = "placeholder",
-        bookTitle = "placeholder"
+        username = "sampleuser",
+        bookTitle = "Sample Book"
     ),
     isReview:Boolean = true,
 
@@ -73,8 +71,6 @@ fun PostFramePreview(
     ) {
         Column(
             modifier = Modifier.padding(0.dp),
-            //verticalArrangement = Arrangement.SpaceBetween
-           // verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -96,7 +92,6 @@ fun PostFramePreview(
                             painter = painterResource(R.drawable.profile_pic_placeholder),
                             contentDescription = "Profile Picture",
                             modifier = Modifier
-                                // .size(width = 56.dp, height = 79.dp)
                                 .size(width = 70.dp, height = 80.dp)
                                 .background(
                                     color = Color(0xFF6650a4),
@@ -132,7 +127,7 @@ fun PostFramePreview(
 
                 when {
                     isReview -> {
-                        ReviewCardPreview()
+                        ReviewCardPreview(review = review)
                     }
                     !isReview -> {
                         PostCardPreview()
@@ -167,9 +162,7 @@ fun PostFramePreview(
 
 @Composable
 fun PostFrame(
-    username: String = "sampleuser", // þegar það er náð í feed þá gefur bakendinn ekki uppl. um það frá hverjum postarnir eru, gætum viljað breyta því
-    bookTitle: String? = "Sample Book",
-    //profilePic:
+    username: String = "sampleuser",
     content: PostReviewItem,
     onEdit: (() -> Unit)? = null,
     onClickUser: (username:String) -> Unit,
@@ -183,8 +176,6 @@ fun PostFrame(
     ) {
         Column(
             modifier = Modifier.padding(0.dp),
-            //verticalArrangement = Arrangement.SpaceBetween
-            // verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -206,7 +197,6 @@ fun PostFrame(
                         painter = painterResource(R.drawable.profile_pic_placeholder),
                         contentDescription = "Profile Picture",
                         modifier = Modifier
-                            // .size(width = 56.dp, height = 79.dp)
                             .size(width = 70.dp, height = 80.dp)
                             .background(
                                 color = Color(0xFF6650a4),

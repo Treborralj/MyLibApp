@@ -182,7 +182,11 @@ fun BookPage(
                                 uiState.reviews,
                             ){ item ->
 
-                                PostFrame("Sample User", book.name, content = item, onClickUser = onClickUser)
+                                PostFrame(
+                                    username = item.review.username,
+                                    content = item,
+                                    onClickUser = onClickUser
+                                )
 
                             }
                         }

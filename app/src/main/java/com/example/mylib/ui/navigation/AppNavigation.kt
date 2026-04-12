@@ -230,6 +230,8 @@ fun AppNavigation(){
                 val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime") ?: ""
                 val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore") ?: 0.0
                 val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId") ?: 0
+                val bookTitle = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewBookTitle") ?: "Book Title"
+                val username = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewUsername") ?: "placeholder"
 
                 val review: ReviewResponse? = if (id != null) {
                     ReviewResponse(
@@ -238,8 +240,8 @@ fun AppNavigation(){
                         time = time,
                         score = score,
                         bookId = bookId,
-                        username = "placeholder",
-                        bookTitle = "placeholder",
+                        username = username,
+                        bookTitle = bookTitle,
                         accountId = 0
                     )
                 } else {
@@ -250,7 +252,7 @@ fun AppNavigation(){
                 ReviewEditor(
                     viewModel = reviewEditorViewModel,
                     review = review,
-                    bookTitle = "Book Title",
+                    bookTitle = bookTitle,
                     bookId = bookId,
                     navController = navController
                 )

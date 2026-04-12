@@ -28,9 +28,8 @@ fun ReviewCardPreview(
         bookId = 1,
         accountId = 0,
         username = "placeholder",
-        bookTitle = "palceholder"
-    ),
-    bookTitle: String = "Sample Book"
+        bookTitle = "Sample Book"
+    )
 )
 {
     Card(
@@ -48,7 +47,7 @@ fun ReviewCardPreview(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = bookTitle,
+                    text = review.bookTitle,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -87,8 +86,7 @@ fun ReviewCardPreview(
 
 @Composable
 fun ReviewCard(
-    review: ReviewResponse,
-    bookTitle: String = "Book Title"
+    review: ReviewResponse
 )
 {
     Card(
@@ -106,7 +104,7 @@ fun ReviewCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = bookTitle,
+                    text = review.bookTitle,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
