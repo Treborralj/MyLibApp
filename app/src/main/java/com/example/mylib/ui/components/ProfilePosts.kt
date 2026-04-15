@@ -1,8 +1,7 @@
-//package com.example.mylib.ui.components
+package com.example.mylib.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,12 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mylib.ui.navigation.Routes
+import com.example.mylib.viewModel.PostReviewItem
 import com.example.mylib.viewModel.ProfileViewModel
 
 @Composable
@@ -26,29 +25,26 @@ fun ProfilePosts(
     viewModel: ProfileViewModel,
     navController: NavController,
     username: String,
-)
-{
-     val uiState by viewModel.uiState.collectAsState();
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
-    val refreshPosts =
-          navController.currentBackStackEntry
-             ?.savedStateHandle
-             ?.getStateFlow("refreshPosts", false)
-            ?.collectAsState()
+    val refreshPosts = navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("refreshPosts", false)
+        ?.collectAsState()
 
     LaunchedEffect(refreshPosts?.value) {
-         if (refreshPosts?.value == true) {
-             viewModel.fetchPosts(username)
-           navController.currentBackStackEntry?.savedStateHandle?.set("refreshPosts", false)
-      }
-     }
+        if (refreshPosts?.value == true) {
+            viewModel.fetchPosts(username)
+            navController.currentBackStackEntry?.savedStateHandle?.set("refreshPosts", false)
+        }
+    }
 
     Card(
         modifier = Modifier.fillMaxSize()
-
-    ){
+    ) {
         when {
-            !uiState.postsError.isEmpty() -> {
+            uiState.postsError.isNotEmpty() -> {
                 Text(
                     text = uiState.postsError,
                     color = MaterialTheme.colorScheme.error
@@ -62,13 +58,13 @@ fun ProfilePosts(
             uiState.posts.isEmpty() && !uiState.loadingPosts -> {
                 Text("This account has no posts yet")
             }
-
-            true -> {
+            else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
                         .background(Color(0xFFFDF8F8)),
                     verticalArrangement = Arrangement.spacedBy(30.dp)
-                ){
+                ) {
                     items(
                         items = uiState.posts
                     ) { item ->
@@ -88,7 +84,7 @@ fun ProfilePosts(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("postTime", item.post.time)
                                 navController.navigate(Routes.PostEditor.route)
                             },
-                            onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)}
+                            onClickUser = { u -> navController.navigate(Routes.Profile.route + "/" + u) }
                         )
                     }
                 }
