@@ -2,6 +2,7 @@ package com.example.mylib.viewModel
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.MainActivity
@@ -11,6 +12,7 @@ import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.data.models.PostResponse
 import com.example.mylib.data.models.ProfileResponse
 import com.example.mylib.data.models.ReviewResponse
+import com.example.mylib.data.repo.ImageStorageManager
 import com.example.mylib.data.repo.PostRepository
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.UserRepository
@@ -48,13 +50,34 @@ class ProfileViewModel(
     private val userRepository: UserRepository,
     private val postRepository: PostRepository,
     private val reviewRepository: ReviewRepository,
-
+    private val storageManager: ImageStorageManager
 ) : ViewModel(){
 
     private val _uiState = MutableStateFlow(ProfileUiState())
 
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
+    val profilePictures = mutableStateMapOf<String, String>() // username -> localPath
+
+    fun resolveProfilePicture(username: String) {
+        if (profilePictures.containsKey(username)) return
+
+        viewModelScope.launch {
+            val localPath = storageManager.getImagePathForUser(username)
+            if (localPath != null) {
+                profilePictures[username] = localPath
+            } else {
+                try {
+                    val savedPath = userRepository.getProfilePicture(username)
+                    if (savedPath != null) {
+                        profilePictures[username] = savedPath
+                    }
+                } catch (e: Exception) {
+                    // Fallback handled by UI
+                }
+            }
+        }
+    }
 
     fun setViewingFollowers(b: Boolean) {
         _uiState.value = _uiState.value.copy(

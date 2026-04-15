@@ -5,7 +5,7 @@ data class ProfileResponse(
     var username: String,
     var bio: String?,
     val profilePictureBase64: String?,
-    //TODO: add profile picture type
+    val profilePictureType: String?,
     var posts: List<PostResponse>,
     var reviews: List<ReviewResponse>,
     var followers: List<FollowResponse>,

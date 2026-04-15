@@ -70,7 +70,7 @@ fun AppNavigation(){
     val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
     val userRepository = UserRepository(RetrofitClient.userApi, db.followingDao(), db.postDao(), db.userDao(), db.reviewDao(), imageStorageManager)
-    val homefeedFactory = HomefeedViewModelFactory(userRepository)
+    val homefeedFactory = HomefeedViewModelFactory(userRepository, imageStorageManager)
     val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
 
     val navigationBackStackEntry by navController.currentBackStackEntryAsState()
@@ -81,10 +81,10 @@ fun AppNavigation(){
     val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
     val listFactory = ListViewModelFactory(listRepository)
     val listViewModel: ListViewModel = viewModel(factory = listFactory)
-    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
+    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository, userRepository, imageStorageManager)
 
     val postRepository = PostRepository(RetrofitClient.postApi, context)
-    val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
+    val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository, imageStorageManager)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 
     val postEditorFactory = PostEditorViewModelFactory(postRepository)

@@ -60,4 +60,12 @@ class ImageStorageManager(private val context: Context) {
             null
         }
     }
+    fun getImagePathForUser(accountId: String): String? {
+        // Check for common extensions
+        val extensions = listOf("jpg", "png", "webp");    for (ext in extensions) {
+            val file = File(imageDir, "image_$accountId.$ext")
+            if (file.exists()) return file.absolutePath
+        }
+        return null
+    }
 }

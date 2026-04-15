@@ -1,15 +1,11 @@
 package com.example.mylib.ui.components
 
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.mylib.MainActivity
 import com.example.mylib.data.models.ReviewResponse
 import com.example.mylib.ui.navigation.Routes
 import com.example.mylib.viewModel.PostReviewItem
@@ -79,10 +74,17 @@ fun ProfileReviews(
                     items(
                         items = uiState.reviews
                     ) { item ->
+                            val reviewerUsername = item.review.username
+                            
+                            LaunchedEffect(reviewerUsername) {
+                                viewModel.resolveProfilePicture(reviewerUsername)
+                            }
+
                             Column(){
                                 PostFrame(
-                                    username = item.review.username,
+                                    username = reviewerUsername,
                                     content = item,
+                                    profilePicPath = viewModel.profilePictures[reviewerUsername],
                                     onEdit = {
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewId", item.review.id)
                                         navController.currentBackStackEntry?.savedStateHandle?.set("reviewText", item.review.text)
