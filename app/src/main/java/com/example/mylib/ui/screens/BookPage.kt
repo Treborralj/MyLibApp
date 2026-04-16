@@ -42,7 +42,6 @@ fun BookPage(
     onAddReview: () -> Unit,
     onClickUser: (username:String) -> Unit,
 ) {
-    // Observe state
     val uiState by viewModel.uiState.collectAsState()
     LaunchedEffect(bookId) {
         viewModel.loadBook(bookId)
@@ -181,8 +180,18 @@ fun BookPage(
                             items(
                                 uiState.reviews,
                             ){ item ->
+                                val username = item.review.username
+                                
+                                LaunchedEffect(username) {
+                                    viewModel.resolveProfilePicture(username)
+                                }
 
-                                PostFrame("Sample User", book.name, content = item, onClickUser = onClickUser)
+                                PostFrame(
+                                    username = username,
+                                    content = item,
+                                    profilePicPath = viewModel.profilePictures[username],
+                                    onClickUser = onClickUser
+                                )
 
                             }
                         }

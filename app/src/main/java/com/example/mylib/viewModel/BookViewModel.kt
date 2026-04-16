@@ -1,5 +1,6 @@
 package com.example.mylib.viewModel
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylib.MainActivity.Companion.loggedInUser
@@ -12,6 +13,8 @@ import com.example.mylib.data.repo.BookRepository
 import com.example.mylib.data.repo.Review
 import com.example.mylib.data.repo.ListRepository
 import com.example.mylib.data.repo.ReviewRepository
+import com.example.mylib.data.repo.ImageStorageManager
+import com.example.mylib.data.repo.UserRepository
 import com.example.mylib.viewModel.Lists.ListType
 import com.example.mylib.viewModel.search.SearchItem
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,10 +37,34 @@ class BookViewModel(
     private val repository: BookRepository,
     private val reviewRepository: ReviewRepository,
     private val listRepository: ListRepository,
+    private val userRepository: UserRepository,
+    private val storageManager: ImageStorageManager
 ) : ViewModel(){
 
     private val _uiState = MutableStateFlow(BookUiState())
     val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
+
+    val profilePictures = mutableStateMapOf<String, String>() // username -> localPath
+
+    fun resolveProfilePicture(username: String) {
+        if (profilePictures.containsKey(username)) return
+
+        viewModelScope.launch {
+            val localPath = storageManager.getImagePathForUser(username)
+            if (localPath != null) {
+                profilePictures[username] = localPath
+            } else {
+                try {
+                    val savedPath = userRepository.getProfilePicture(username)
+                    if (savedPath != null) {
+                        profilePictures[username] = savedPath
+                    }
+                } catch (e: Exception) {
+                    // Fallback handled by UI
+                }
+            }
+        }
+    }
 
     fun loadBook(bookId: Int) {
         viewModelScope.launch {
@@ -137,7 +164,10 @@ fun Review.toReviewResponse(): ReviewResponse {
         bookId = bookId,
         text = text ?: "",
         score = score,
-        time = time ?: ""
+        time = time ?: "",
+        username = username,
+        bookTitle = bookName,
+        accountId = 0
     )
 }
 fun Book.toBookResponse(): BookResponse {

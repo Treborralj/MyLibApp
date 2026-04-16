@@ -21,13 +21,15 @@ import com.example.mylib.data.models.ReviewResponse
 @Composable
 fun ReviewCardPreview(
     review: ReviewResponse = ReviewResponse(
-        id =0,
-        text ="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        id = 0,
+        text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
         time = "2026-02-25T15:58:58.107948",
-        score =3.5,
-        bookId = 1
-    ),
-    bookTitle: String = "Sample Book"
+        score = 3.5,
+        bookId = 1,
+        accountId = 0,
+        username = "placeholder",
+        bookTitle = "Sample Book"
+    )
 )
 {
     Card(
@@ -45,7 +47,7 @@ fun ReviewCardPreview(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = bookTitle,
+                    text = review.bookTitle,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -84,8 +86,7 @@ fun ReviewCardPreview(
 
 @Composable
 fun ReviewCard(
-    review: ReviewResponse,
-    bookTitle: String = "Book Title"
+    review: ReviewResponse
 )
 {
     Card(
@@ -103,7 +104,7 @@ fun ReviewCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = bookTitle,
+                    text = review.bookTitle,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

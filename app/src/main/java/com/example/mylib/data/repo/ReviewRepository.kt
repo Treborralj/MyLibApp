@@ -26,6 +26,7 @@ class ReviewRepository(
                 Review(
                     id = it.id,
                     bookId = bookId,
+                    bookName = it.bookTitle,
                     username = it.username ?: "placeholder",
                     text = it.text,
                     score = it.score,
@@ -33,6 +34,7 @@ class ReviewRepository(
                 )
             }
         )
+        updateLocalBookScore(bookId)
     }
 
     suspend fun updateLocalBookScore(bookId: Int) {
@@ -59,12 +61,14 @@ class ReviewRepository(
             Review(
                 id = response.id,
                 bookId = bookId,
+                bookName = response.bookTitle,
                 username = response.username ?: "placeholder",
                 text = response.text,
                 score = response.score,
                 time = response.time
             )
         )
+        updateLocalBookScore(bookId)
         return response
     }
 
@@ -77,20 +81,29 @@ class ReviewRepository(
             )
         )
 
-        reviewDao.insertReview(
-            Review(
-                id = response.id,
-                bookId = response.bookId,
-                username = response.username ?: "placeholder",
-                text = response.text,
-                score = response.score,
-                time = response.time
-            )
+        val updatedReview = Review(
+            id = response.id,
+            bookId = response.bookId,
+            bookName = response.bookTitle,
+            username = response.username ?: "placeholder",
+            text = response.text,
+            score = response.score,
+            time = response.time
         )
+        reviewDao.insertReview(updatedReview)
+        updateLocalBookScore(updatedReview.bookId)
         return response
     }
 
     suspend fun deleteReview(id: Int) {
+        val review = reviewDao.getReviewById(id)
+        val bookId = review?.bookId
+        
         api.deleteReview(id)
+        reviewDao.deleteReview(id)
+        
+        if (bookId != null) {
+            updateLocalBookScore(bookId)
+        }
     }
 }

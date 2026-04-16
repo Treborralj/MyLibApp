@@ -33,11 +33,13 @@ import com.example.mylib.R
 import com.example.mylib.data.models.FollowResponse
 import com.example.mylib.viewModel.ProfileViewModel
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import com.example.mylib.ui.util.base64ToImageBitmap
+
 @Composable
 fun ProfileHeader(
     viewModel: ProfileViewModel,
@@ -48,12 +50,12 @@ fun ProfileHeader(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(intrinsicSize = IntrinsicSize.Min)
+            .wrapContentHeight()
     ) {
         when {
             uiState.loading -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -62,16 +64,12 @@ fun ProfileHeader(
 
             uiState.error.isNotEmpty() -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        modifier = Modifier
-                            .padding()
-                            .fillMaxWidth(),
                         text = uiState.error,
                         style = MaterialTheme.typography.bodyLarge,
-                        overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -80,7 +78,7 @@ fun ProfileHeader(
 
             uiState.profileData == null -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -94,17 +92,14 @@ fun ProfileHeader(
             else -> {
                 Column(
                     modifier = Modifier
-                        .padding(start = 15.dp, end = 15.dp)
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
                         .wrapContentHeight(),
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding()
-                            .wrapContentHeight(),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(15.dp),
                     ) {
                         val profileBitmap = base64ToImageBitmap(uiState.profileData?.profilePictureBase64)
 
@@ -114,8 +109,7 @@ fun ProfileHeader(
                                 contentDescription = "Profile Picture",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .fillMaxWidth(0.3f)
-                                    .aspectRatio(1f)
+                                    .size(80.dp)
                                     .clip(CircleShape),
                             )
                         } else {
@@ -124,123 +118,100 @@ fun ProfileHeader(
                                 contentDescription = "Profile Picture",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .fillMaxWidth(0.3f)
-                                    .aspectRatio(1f)
+                                    .size(80.dp)
                                     .clip(CircleShape),
                             )
                         }
 
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                modifier = Modifier
-                                    .padding()
-                                    .fillMaxWidth(),
-                                text = uiState.profileData?.username ?: "",
-                                style = MaterialTheme.typography.titleLarge,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = uiState.profileData?.username ?: "",
+                            style = MaterialTheme.typography.titleLarge,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (uiState.profileData!!.username != MainActivity.loggedInUser) {
-                            if (!uiState.amFollowing) {
-                                Button(
-                                    modifier = Modifier.fillMaxWidth(0.3f),
-                                    shape = RoundedCornerShape(35),
-                                    onClick = {
+                            Button(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(35),
+                                onClick = {
+                                    if (!uiState.amFollowing) {
                                         viewModel.follow(uiState.profileData!!.username)
-                                    }
-                                ) {
-                                    Text(
-                                        text = "Follow",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontSize = 13.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            } else {
-                                Button(
-                                    modifier = Modifier.fillMaxWidth(0.3f),
-                                    shape = RoundedCornerShape(35),
-                                    onClick = {
+                                    } else {
                                         viewModel.unfollow(uiState.profileData!!.username)
                                     }
-                                ) {
-                                    Text(
-                                        text = "Unfollow",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontSize = 13.sp,
-                                        textAlign = TextAlign.Center
-                                    )
                                 }
+                            ) {
+                                Text(
+                                    text = if (!uiState.amFollowing) "Follow" else "Unfollow",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontSize = 13.sp
+                                )
                             }
                         } else {
                             Button(
-                                modifier = Modifier.fillMaxWidth(0.3f),
+                                modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(35),
                                 onClick = onEditProfile
                             ) {
                                 Text(
-                                    text = "Edit\nProfile",
+                                    text = "Edit Profile",
                                     style = MaterialTheme.typography.labelMedium,
-                                    fontSize = 13.sp,
-                                    textAlign = TextAlign.Center
+                                    fontSize = 13.sp
                                 )
                             }
                         }
 
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
+                            modifier = Modifier.weight(2f),
+                            horizontalArrangement = Arrangement.End
                         ) {
                             TextButton(
-                                shape = RoundedCornerShape(25),
-                                onClick = {
-                                    viewModel.setViewingFollowers(true)
-                                }
+                                onClick = { viewModel.setViewingFollowers(true) }
                             ) {
-                                Text(
-                                    text = uiState.profileData!!.followers.size.toString() + "\nFollowers",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    textAlign = TextAlign.Center,
-                                )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = uiState.profileData!!.followers.size.toString(),
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = "Followers",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
                             }
 
                             TextButton(
-                                shape = RoundedCornerShape(25),
-                                onClick = {
-                                    viewModel.setViewingFollowing(true)
-                                }
+                                onClick = { viewModel.setViewingFollowing(true) }
                             ) {
-                                Text(
-                                    text = uiState.profileData!!.following.size.toString() + "\nFollowing",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    textAlign = TextAlign.Center,
-                                )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = uiState.profileData!!.following.size.toString(),
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = "Following",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
                             }
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center,
-                    ) {
+                    if (!uiState.profileData!!.bio.isNullOrBlank()) {
                         Text(
-                            modifier = Modifier.height(IntrinsicSize.Min),
-                            text = uiState.profileData!!.bio ?: "No Bio",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            text = uiState.profileData!!.bio!!,
                             style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
+                            textAlign = TextAlign.Start,
                         )
                     }
                 }
@@ -251,122 +222,73 @@ fun ProfileHeader(
 
 @Preview
 @Composable
-fun ProfileHeaderPreview(
-    username: String = "Sample User",
-    bio: String = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    followers: List<FollowResponse> = listOf(
-        FollowResponse("Sample User 1"),
-        FollowResponse("Sample User 2"),
-        FollowResponse("Sample User 3")
-    ),
-    following: List<FollowResponse> = listOf(
-        FollowResponse("Sample User 1"),
-        FollowResponse("Sample User 2"),
-        FollowResponse("Sample User 3")
-    ),
-) {
+fun ProfileHeaderPreview() {
+    val sampleFollowers = listOf(FollowResponse("u1"), FollowResponse("u2"))
+    
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(intrinsicSize = IntrinsicSize.Min)
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
-                .padding(start = 15.dp, end = 15.dp)
+                .padding(15.dp)
                 .wrapContentHeight(),
-            verticalArrangement = Arrangement.spacedBy(5.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding()
-                    .wrapContentHeight(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(0.dp)
+                horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
                 Image(
                     painter = painterResource(R.drawable.profile_pic_placeholder),
                     contentDescription = "Profile Picture",
-                    modifier = Modifier.fillMaxWidth(0.3f),
+                    modifier = Modifier.size(80.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
 
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding()
-                            .fillMaxWidth(),
-                        text = username,
-                        style = MaterialTheme.typography.titleLarge,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                Text(
+                    text = "Sample User",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(),
-                horizontalArrangement = Arrangement.spacedBy(0.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    modifier = Modifier.fillMaxWidth(0.3f),
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(35),
                     onClick = { }
                 ) {
-                    Text(
-                        text = "Edit\nProfile",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    Text("Edit Profile")
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    modifier = Modifier.weight(2f),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(
-                        shape = RoundedCornerShape(25),
-                        onClick = { }
-                    ) {
-                        Text(
-                            text = followers.size.toString() + "\nFollowers",
-                            style = MaterialTheme.typography.labelLarge,
-                            textAlign = TextAlign.Center,
-                        )
+                    TextButton(onClick = { }) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("123", style = MaterialTheme.typography.titleMedium)
+                            Text("Followers", style = MaterialTheme.typography.labelSmall)
+                        }
                     }
-
-                    TextButton(
-                        shape = RoundedCornerShape(25),
-                        onClick = { }
-                    ) {
-                        Text(
-                            text = following.size.toString() + "\nFollowing",
-                            style = MaterialTheme.typography.labelLarge,
-                            textAlign = TextAlign.Center,
-                        )
+                    TextButton(onClick = { }) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("456", style = MaterialTheme.typography.titleMedium)
+                            Text("Following", style = MaterialTheme.typography.labelSmall)
+                        }
                     }
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    modifier = Modifier.height(IntrinsicSize.Min),
-                    text = bio,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                )
-            }
+            Text(
+                text = "This is a sample bio that should now have much better padding and alignment.",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            )
         }
     }
 }

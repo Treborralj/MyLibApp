@@ -10,7 +10,7 @@ class FollowingRepository(
     private val api: UserApi
 ) {
 
-    suspend fun follow(loggedinUser: String, username: String) {
+    suspend fun followAccount(loggedinUser: String, username: String) {
         api.followAccount(FollowRequest(username))
 
         followingDao.insert(
@@ -21,7 +21,7 @@ class FollowingRepository(
         )
     }
 
-    suspend fun unfollow(loggedinUser: String, username: String) {
+    suspend fun unfollowAccount(loggedinUser: String, username: String) {
         api.unfollowAccount(FollowRequest(username))
 
         followingDao.delete(
@@ -42,14 +42,8 @@ class FollowingRepository(
             )
         }
 
-        followingDao.clearAndInsert(loggedinUser, followingEntities)
+        followingDao.clearFollowingAndInsert(loggedinUser, followingEntities)
     }
 
-    fun observeFollowing(loggedinUser: String): Flow<List<Following>> {
-        return followingDao.getFollowedUsers(loggedinUser)
-    }
 
-    fun observeFollowers(loggedinUser: String): Flow<List<Following>> {
-        return followingDao.getFollowingUsers(loggedinUser)
-    }
 }

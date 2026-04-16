@@ -18,9 +18,7 @@ import androidx.navigation.NavController
 import com.example.mylib.MainActivity
 import com.example.mylib.ui.components.PostFrame
 import com.example.mylib.ui.navigation.Routes
-import com.example.mylib.viewModel.BookViewModel
 import com.example.mylib.viewModel.HomefeedViewModel
-import com.example.mylib.viewModel.PostReviewItem
 
 @Composable
 fun HomeFeedPage(
@@ -49,8 +47,16 @@ fun HomeFeedPage(
                     items(
                         uiState.posts,
                     ){ item ->
+                        val username = item.post.username
+                        
+                        LaunchedEffect(username) {
+                            viewModel.resolveProfilePicture(username)
+                        }
 
-                        PostFrame("Sample User", "post title", content = PostReviewItem.PostItem(item.post),
+                        PostFrame(
+                            username = username,
+                            content = item,
+                            profilePicPath = viewModel.profilePictures[username],
                             onClickUser = {u -> navController.navigate(Routes.Profile.route + "/" + u)},
                         )
 

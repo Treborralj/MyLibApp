@@ -17,6 +17,7 @@ import com.example.mylib.data.remote.RetrofitClient
 import com.example.mylib.data.repo.AppDatabase
 import com.example.mylib.data.repo.AuthenticationRepository
 import com.example.mylib.data.repo.BookRepository
+import com.example.mylib.data.repo.ImageStorageManager
 import com.example.mylib.data.repo.PostRepository
 import com.example.mylib.data.repo.ReviewRepository
 import com.example.mylib.data.repo.SearchRepository
@@ -58,6 +59,7 @@ fun AppNavigation(){
     val context = LocalContext.current
     val db = AppDatabase.getInstance(context)
     val navController = rememberNavController()
+    val imageStorageManager = ImageStorageManager(context)
 
     val authenticationRepository = AuthenticationRepository(RetrofitClient.authenticationApi, db.bookListDao())
     val authenticationFactory = AuthenticationViewModelFactory(authenticationRepository)
@@ -67,24 +69,22 @@ fun AppNavigation(){
     val bookFactory = SearchViewModelFactory(searchRepository)
     val searchViewModel: SearchViewModel = viewModel(factory = bookFactory)
 
-    val userRepository = UserRepository(RetrofitClient.userApi, db.postDao())
-    val homefeedFactory = HomefeedViewModelFactory(userRepository)
+    val userRepository = UserRepository(RetrofitClient.userApi, db.followingDao(), db.postDao(), db.userDao(), db.reviewDao(), imageStorageManager)
+    val homefeedFactory = HomefeedViewModelFactory(userRepository, imageStorageManager)
     val homeFeedViewModel: HomefeedViewModel = viewModel(factory = homefeedFactory)
 
     val navigationBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navigationBackStackEntry?.destination?.route
 
-
     val bookRepository = BookRepository(RetrofitClient.bookApi, db.bookDao(), db.reviewDao())
     val reviewRepository = ReviewRepository(RetrofitClient.reviewApi, db.reviewDao(), db.bookDao())
-        val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
-        val listFactory = ListViewModelFactory(listRepository)
-        val listViewModel: ListViewModel = viewModel(factory = listFactory)
-    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository)
+    val listRepository = ListRepository(RetrofitClient.listApi, db.bookListDao(), db.bookListCrossRefDao())
+    val listFactory = ListViewModelFactory(listRepository)
+    val listViewModel: ListViewModel = viewModel(factory = listFactory)
+    val bookViewModelFactory = BookViewModelFactory(bookRepository,reviewRepository,listRepository, userRepository, imageStorageManager)
 
-
-    val postRepository = PostRepository(RetrofitClient.postApi)
-    val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository)
+    val postRepository = PostRepository(RetrofitClient.postApi, context)
+    val profileFactory = ProfileViewModelFactory(userRepository,postRepository,reviewRepository, imageStorageManager)
     val profileViewModel: ProfileViewModel = viewModel(factory = profileFactory)
 
     val postEditorFactory = PostEditorViewModelFactory(postRepository)
@@ -199,13 +199,21 @@ fun AppNavigation(){
 
             composable(Routes.PostEditor.route) {
                 val id = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("postId") ?: 0
+                val title = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTitle") ?: ""
                 val text = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postText") ?: ""
                 val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postTime") ?: ""
+                val username = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postUsername") ?: ""
+                val imageBase64 = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postImageBase64")
+                val imageType = navController.previousBackStackEntry?.savedStateHandle?.get<String>("postImageType")
 
                 val post = PostResponse(
                     id = id,
+                    username = username,
+                    title = title,
                     text = text,
                     time = time,
+                    imageBase64 = imageBase64,
+                    imageType = imageType
                 )
 
                 val postEditorViewModel: PostEditorViewModel = viewModel(factory = postEditorFactory)
@@ -222,6 +230,8 @@ fun AppNavigation(){
                 val time = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewTime") ?: ""
                 val score = navController.previousBackStackEntry?.savedStateHandle?.get<Double>("reviewScore") ?: 0.0
                 val bookId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("reviewBookId") ?: 0
+                val bookTitle = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewBookTitle") ?: "Book Title"
+                val username = navController.previousBackStackEntry?.savedStateHandle?.get<String>("reviewUsername") ?: "placeholder"
 
                 val review: ReviewResponse? = if (id != null) {
                     ReviewResponse(
@@ -229,7 +239,10 @@ fun AppNavigation(){
                         text = text,
                         time = time,
                         score = score,
-                        bookId = bookId
+                        bookId = bookId,
+                        username = username,
+                        bookTitle = bookTitle,
+                        accountId = 0
                     )
                 } else {
                     null
@@ -239,7 +252,7 @@ fun AppNavigation(){
                 ReviewEditor(
                     viewModel = reviewEditorViewModel,
                     review = review,
-                    bookTitle = "Book Title",
+                    bookTitle = bookTitle,
                     bookId = bookId,
                     navController = navController
                 )
